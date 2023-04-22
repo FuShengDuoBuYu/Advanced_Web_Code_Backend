@@ -14,6 +14,7 @@ import javax.persistence.*;
 @Entity
 
 @Table(appliesTo = "user", comment = "用户表")
+@GenericGenerator(name ="increment", strategy = "increment")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,4 +26,10 @@ public class User {
     private String password;
     @Column(name = "role", nullable = false)
     private int role;
+
+    public User(String username, String password, int role) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+    }
 }

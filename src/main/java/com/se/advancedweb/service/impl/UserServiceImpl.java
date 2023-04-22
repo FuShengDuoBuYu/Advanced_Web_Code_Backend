@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
     public Response<?> getUserInfo(String token) {
         JSONObject data = new JSONObject();
         String id = TokenUtil.getUserId(token);
-        User user = userMapper.findById(id);
+        User user = userMapper.findById(Integer.parseInt(id));
         //更新token
         String newToken = TokenUtil.getToken(id, user.getUsername(), String.valueOf(user.getRole()), user.getPassword());
         data.put("token", newToken);
@@ -52,10 +52,8 @@ public class UserServiceImpl implements UserService {
         if(user != null){
             return new Response<>(false, "用户已存在！");
         }
-        user = new User();
-        user.setUsername(username);
-        user.setPassword(password);
-        user.setRole(role);
+        user = new User(username, password, role);
+
         userMapper.save(user);
         return new Response<>(true, "注册成功！");
     }
@@ -65,6 +63,6 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public User findUserById(String id) {
-        return userMapper.findById(id);
+        return userMapper.findById(Integer.parseInt(id));
     }
 }
