@@ -10,6 +10,9 @@ public interface UserService {
     public Response<?> login(String username, String password);
     // 获取用户信息
     public Response<?> getUserInfo(String token);
+    // 用户注册
+    public Response<?> register(String username, String password, int role);
+
     // 获取所有用户
      public List<User> getAllUser();
     // 通过id获取用户

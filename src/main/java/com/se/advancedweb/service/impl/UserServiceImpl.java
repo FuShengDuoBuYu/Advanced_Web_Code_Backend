@@ -47,6 +47,19 @@ public class UserServiceImpl implements UserService {
         return new Response<>(true, "获取用户信息成功！", data);
     }
     @Override
+    public Response<?> register(String username, String password, int role) {
+        User user = userMapper.findByUsername(username);
+        if(user != null){
+            return new Response<>(false, "用户已存在！");
+        }
+        user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setRole(role);
+        userMapper.save(user);
+        return new Response<>(true, "注册成功！");
+    }
+    @Override
     public List<User> getAllUser() {
         return userMapper.findAll();
     }

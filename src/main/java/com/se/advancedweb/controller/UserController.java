@@ -34,6 +34,14 @@ public class UserController {
     public Response<?> getUserInfo(@RequestHeader("token") String token) {
         return userService.getUserInfo(token);
     }
+    @ApiOperation(value = "用户注册")
+    @PostMapping("/register")
+    public Response<?> register(@RequestBody JSONObject body) {
+        String username = body.getString("username");
+        String password = body.getString("password");
+        int role = body.getInteger("role");
+        return userService.register(username, password, role);
+    }
     @ApiOperation(value = "获取所有用户")
     @VerifyToken
     @GetMapping("/all")
