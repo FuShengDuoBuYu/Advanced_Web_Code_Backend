@@ -12,6 +12,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+
 @Table(appliesTo = "user", comment = "用户表")
 public class User {
     @Id

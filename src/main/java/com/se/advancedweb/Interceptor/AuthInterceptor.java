@@ -69,6 +69,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
         return true;
     }
+
     private String findUserPassword(String userId) {
         String res = "";
         User user = userService.findUserById(userId);

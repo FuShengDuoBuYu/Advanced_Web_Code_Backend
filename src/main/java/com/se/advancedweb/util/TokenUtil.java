@@ -28,4 +28,7 @@ public class TokenUtil {
     //withExpiresAt：超时时间设置，超时 token 将失效
     //withIssuedAt：签发时间，一般设置为当前时间
     //sign：签名，我们可以自定义签名和算法
+    public static String getUserId(String token){
+        return JWT.decode(token).getAudience().get(0);
+    }
 }
