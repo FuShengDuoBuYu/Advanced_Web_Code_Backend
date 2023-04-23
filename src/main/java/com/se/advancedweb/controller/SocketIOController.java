@@ -19,12 +19,12 @@ import javax.annotation.Resource;
 
 @Component
 @RestController
-@RequestMapping("/push")
+//@RequestMapping("/push")
 public class SocketIOController {
     @Resource
     private ClientCache clientCache;
 
-    @GetMapping("/user/{userId}")
+//    @GetMapping("/user/{userId}")
     public String pushTuUser(@PathVariable("userId") String userId){
         HashMap<UUID, SocketIOClient> userClient = clientCache.getUserClient(userId);
         userClient.forEach((uuid, socketIOClient) -> {

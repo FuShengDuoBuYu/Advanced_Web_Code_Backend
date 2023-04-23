@@ -29,7 +29,7 @@ public class Swagger2 {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 //页面标题
-                .title("Se_Lab_Backend接口描述")
+                .title("Advanced_Web_Backend接口描述")
                 //创建人
                 //.contact(new Contact("张大壮", "http://www.github.com/994683607", "994683607@qq.com"))
                 //版本号
