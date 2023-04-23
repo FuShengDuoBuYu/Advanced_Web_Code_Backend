@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
     public Response<?> register(String username, String password, int role) {
         User user = userMapper.findByUsername(username);
         if(user != null){
-            return new Response<>(false, "用户已存在！");
+            return new Response<>(false, "用户名已存在！");
         }
         user = new User(username, password, role);
 

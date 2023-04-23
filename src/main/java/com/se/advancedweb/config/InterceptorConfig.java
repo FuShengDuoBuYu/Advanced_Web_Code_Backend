@@ -8,11 +8,11 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class interceptorConfig implements WebMvcConfigurer {
+public class InterceptorConfig implements WebMvcConfigurer {
     AuthInterceptor authInterceptor;
 
     @Autowired
-    public interceptorConfig(AuthInterceptor authInterceptor) {
+    public InterceptorConfig(AuthInterceptor authInterceptor) {
         this.authInterceptor = authInterceptor;
     }
     //开启跨域
