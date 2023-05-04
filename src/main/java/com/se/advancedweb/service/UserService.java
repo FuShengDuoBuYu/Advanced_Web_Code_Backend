@@ -17,4 +17,6 @@ public interface UserService {
      public List<User> getAllUser();
     // 通过id获取用户
     public User findUserById(String id);
+
+    public Response<?> logout(String token);
 }

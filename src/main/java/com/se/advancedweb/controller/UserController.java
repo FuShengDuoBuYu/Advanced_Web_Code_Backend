@@ -49,4 +49,11 @@ public class UserController {
     public String helloUser() {
         return userService.getAllUser().toString();
     }
+
+    @ApiOperation(value = "用户登出")
+    @VerifyToken
+    @PostMapping("/logout")
+    public Response<?> logout(@RequestHeader("token") String token) {
+        return userService.logout(token);
+    }
 }

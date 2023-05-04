@@ -3,6 +3,7 @@ package com.se.advancedweb.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.auth0.jwt.JWT;
 import com.se.advancedweb.entity.User;
+import com.se.advancedweb.mapper.UserLoginHistoryMapper;
 import com.se.advancedweb.mapper.UserMapper;
 import com.se.advancedweb.util.Response;
 import com.se.advancedweb.util.TokenUtil;
@@ -17,14 +18,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 class UserServiceImplTest {
     private User user;
+    private UserLoginHistoryMapper userLoginHistoryMapper;
     @BeforeEach
     void setUp() {
         // 创建一个模拟的 User 对象
         user = new User();
-        user.setId(123);
+        user.setUserId(123);
         user.setUsername("TestUser");
         user.setRole(1);
         user.setPassword("password");
+        // 创建一个模拟的 UserLoginHistoryMapper 对象
+        userLoginHistoryMapper = Mockito.mock(UserLoginHistoryMapper.class);
 
     }
 
@@ -33,7 +37,7 @@ class UserServiceImplTest {
         // Arrange
         UserMapper userMapper = Mockito.mock(UserMapper.class);
         Mockito.when(userMapper.findByUsername(Mockito.anyString())).thenReturn(user);
-        UserServiceImpl userService = new UserServiceImpl(userMapper);
+        UserServiceImpl userService = new UserServiceImpl(userMapper, userLoginHistoryMapper);
         // Act
         Response<?> response = userService.login("TestUser", "password");
 
@@ -52,7 +56,7 @@ class UserServiceImplTest {
         // Arrange
         UserMapper userMapper = Mockito.mock(UserMapper.class);
         Mockito.when(userMapper.findByUsername("testUser")).thenReturn(null);
-        UserServiceImpl userService = new UserServiceImpl(userMapper);
+        UserServiceImpl userService = new UserServiceImpl(userMapper, userLoginHistoryMapper);
         // Act
         Response<?> response = userService.login("testUser", "testPassword");
 
@@ -69,8 +73,8 @@ class UserServiceImplTest {
 
         // mock 掉 userMapper 的 findById 方法
         UserMapper userMapper = Mockito.mock(UserMapper.class);
-        Mockito.when(userMapper.findById(Mockito.anyInt())).thenReturn(user);
-        UserServiceImpl userService = new UserServiceImpl(userMapper);
+        Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(user);
+        UserServiceImpl userService = new UserServiceImpl(userMapper, userLoginHistoryMapper);
         // 调用 getUserInfo 方法获取响应
         Response<?> response = userService.getUserInfo(token);
 
@@ -86,7 +90,7 @@ class UserServiceImplTest {
         // mock 掉 userMapper 的 findById 方法
         UserMapper userMapper = Mockito.mock(UserMapper.class);
         Mockito.when(userMapper.findByUsername(Mockito.anyString())).thenReturn(null);
-        UserServiceImpl userService = new UserServiceImpl(userMapper);
+        UserServiceImpl userService = new UserServiceImpl(userMapper, userLoginHistoryMapper);
 
         Response<?> response = userService.register("TestUser_new", "password_new", 1);
         assertTrue(response.isSuccess());
@@ -99,7 +103,7 @@ class UserServiceImplTest {
         // mock 掉 userMapper 的 findById 方法
         UserMapper userMapper = Mockito.mock(UserMapper.class);
         Mockito.when(userMapper.findByUsername(Mockito.anyString())).thenReturn(user);
-        UserServiceImpl userService = new UserServiceImpl(userMapper);
+        UserServiceImpl userService = new UserServiceImpl(userMapper, userLoginHistoryMapper);
 
         Response<?> response = userService.register("TestUser", "password", 1);
         assertFalse(response.isSuccess());
@@ -113,7 +117,7 @@ class UserServiceImplTest {
         // mock 掉 userMapper 的 findById 方法
         UserMapper userMapper = Mockito.mock(UserMapper.class);
         Mockito.when(userMapper.findAll()).thenReturn(users);
-        UserServiceImpl userService = new UserServiceImpl(userMapper);
+        UserServiceImpl userService = new UserServiceImpl(userMapper, userLoginHistoryMapper);
         List<User> responseData = userService.getAllUser();
         assertEquals(1, responseData.size());
         assertEquals("TestUser", responseData.get(0).getUsername());
@@ -123,9 +127,9 @@ class UserServiceImplTest {
     void findUserById() {
         // mock 掉 userMapper 的 findById 方法
         UserMapper userMapper = Mockito.mock(UserMapper.class);
-        Mockito.when(userMapper.findById(Mockito.anyInt())).thenReturn(user);
-        UserServiceImpl userService = new UserServiceImpl(userMapper);
-        User responseData = userService.findUserById(String.valueOf(user.getId()));
+        Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(user);
+        UserServiceImpl userService = new UserServiceImpl(userMapper, userLoginHistoryMapper);
+        User responseData = userService.findUserById(String.valueOf(user.getUserId()));
         assertEquals("TestUser", responseData.getUsername());
     }
 }

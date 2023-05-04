@@ -6,9 +6,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserMapper extends JpaRepository<User, Long> {
-    User findById(int id);
+    User findByUserId(int id);
+
 
     User findByUsername(String username);
 
-    void deleteById(String id);
+    void deleteByUserId(String id);
 }
