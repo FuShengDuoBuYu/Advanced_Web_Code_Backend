@@ -1,8 +1,14 @@
 package com.se.advancedweb.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.se.advancedweb.entity.Course;
+import com.se.advancedweb.entity.CourseSelection;
 import com.se.advancedweb.entity.User;
 import com.se.advancedweb.entity.UserLoginHistory;
+import com.se.advancedweb.entity.VO.CourseStudentVO;
+import com.se.advancedweb.entity.VO.CourseTeacherVO;
+import com.se.advancedweb.mapper.CourseMapper;
+import com.se.advancedweb.mapper.CourseSelectionMapper;
 import com.se.advancedweb.mapper.UserLoginHistoryMapper;
 import com.se.advancedweb.mapper.UserMapper;
 import com.se.advancedweb.service.UserService;
@@ -13,16 +19,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
     private UserLoginHistoryMapper userLoginHistoryMapper;
+    private CourseMapper courseMapper;
+    private CourseSelectionMapper courseSelectionMapper;
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, UserLoginHistoryMapper userLoginHistoryMapper) {
+    public UserServiceImpl(UserMapper userMapper, UserLoginHistoryMapper userLoginHistoryMapper, CourseMapper courseMapper, CourseSelectionMapper courseSelectionMapper) {
         this.userMapper = userMapper;
         this.userLoginHistoryMapper = userLoginHistoryMapper;
+        this.courseMapper = courseMapper;
+        this.courseSelectionMapper = courseSelectionMapper;
     }
     @Override
     public Response<?> login(String username, String password) {
@@ -83,5 +94,70 @@ public class UserServiceImpl implements UserService {
         UserLoginHistory userLoginHistory = new UserLoginHistory(timestamp, ConstVariable.LOGOUT_OPERATION, user);
         userLoginHistoryMapper.save(userLoginHistory);
         return new Response<>(true, "登出成功！");
+    }
+
+    @Override
+    public Response<?> createCourse(String token, String courseName, String courseDescription){
+        String id = TokenUtil.getUserId(token);
+        User user = userMapper.findByUserId(Integer.parseInt(id));
+        if (user.getRole() != ConstVariable.TEACHER){
+            return new Response<>(false, "您没有权限创建课程！");
+        }
+
+        Course course = new Course(courseName, courseDescription, user);
+        courseMapper.save(course);
+        return new Response<>(true, "创建课程成功");
+    }
+
+    @Override
+    public Response<?> joinCourse(String token, String courseName){
+        String id = TokenUtil.getUserId(token);
+        User user = userMapper.findByUserId(Integer.parseInt(id));
+        if (user.getRole() != ConstVariable.STUDENT){
+            return new Response<>(false, "您没有权限加入课程！");
+        }
+        Course course = courseMapper.findByCourseName(courseName);
+        if (course == null){
+            return new Response<>(false, "课程不存在！");
+        }
+
+        CourseSelection courseSelection = courseSelectionMapper.findByStudentAndCourse(user, course);
+        if (courseSelection != null){
+            return new Response<>(false, "您已经加入该课程！");
+        }
+        CourseSelection newcourseSelection = new CourseSelection(course, user);
+        courseSelectionMapper.save(newcourseSelection);
+        return new Response<>(true, "加入课程成功");
+    }
+
+    @Override
+    public Response<?> getCourse(String token){
+        String id = TokenUtil.getUserId(token);
+        User user = userMapper.findByUserId(Integer.parseInt(id));
+        if (user.getRole() == ConstVariable.STUDENT) {
+            List<CourseSelection> courseSelections = courseSelectionMapper.findByStudent(user);
+            List<CourseStudentVO> courseStudentVOS = new ArrayList<>();
+            for (CourseSelection courseSelection : courseSelections){
+                Course course = courseSelection.getCourse();
+                courseStudentVOS.add(new CourseStudentVO(course.getCourseName(), course.getCourseDescription(), course.getTeacher().getUsername()));
+            }
+            return new Response<>(true, "获取课程成功", courseStudentVOS);
+        }
+        else if (user.getRole() == ConstVariable.TEACHER){
+            List<Course> courses = courseMapper.findByTeacher(user);
+            List<CourseTeacherVO> courseTeacherVOS = new ArrayList<>();
+            for (Course course : courses){
+                List<String> students = new ArrayList<>();
+                List<CourseSelection> courseSelections = courseSelectionMapper.findByCourse(course);
+                for (CourseSelection courseSelection : courseSelections){
+                    students.add(courseSelection.getStudent().getUsername());
+                }
+                courseTeacherVOS.add(new CourseTeacherVO(course.getCourseName(), course.getCourseDescription(), students));
+            }
+            return new Response<>(true, "获取课程成功", courseTeacherVOS);
+        }
+        else {
+            return new Response<>(false, "获取课程失败");
+        }
     }
 }

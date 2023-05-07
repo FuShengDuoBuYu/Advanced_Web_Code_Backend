@@ -56,4 +56,28 @@ public class UserController {
     public Response<?> logout(@RequestHeader("token") String token) {
         return userService.logout(token);
     }
+
+    @ApiOperation(value = "老师新建课程")
+    @VerifyToken
+    @PostMapping("/createCourse")
+    public Response<?> createCourse(@RequestHeader("token") String token, @RequestBody JSONObject body) {
+        String courseName = body.getString("courseName");
+        String courseDescription = body.getString("courseDescription");
+        return userService.createCourse(token, courseName, courseDescription);
+    }
+
+    @ApiOperation(value = "学生加入课程")
+    @VerifyToken
+    @PostMapping("/joinCourse")
+    public Response<?> joinCourse(@RequestHeader("token") String token, @RequestBody JSONObject body) {
+        String courseName = body.getString("courseName");
+        return userService.joinCourse(token, courseName);
+    }
+
+    @ApiOperation(value = "获取用户课程")
+    @VerifyToken
+    @GetMapping("/getCourse")
+    public Response<?> getCourse(@RequestHeader("token") String token) {
+        return userService.getCourse(token);
+    }
 }

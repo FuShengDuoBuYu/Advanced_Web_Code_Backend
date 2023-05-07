@@ -19,4 +19,10 @@ public interface UserService {
     public User findUserById(String id);
 
     public Response<?> logout(String token);
+
+    public Response<?> createCourse(String token, String courseName, String courseDescription);
+
+    public Response<?> joinCourse(String token, String courseName);
+
+    public Response<?> getCourse(String token);
 }
