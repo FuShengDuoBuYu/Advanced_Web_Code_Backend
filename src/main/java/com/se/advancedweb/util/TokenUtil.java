@@ -16,7 +16,7 @@ public class TokenUtil {
     public static String getToken(String id, String username, String role,String password){
         return JWT.create().withAudience(id)
                 .withClaim("username", username)
-                .withClaim("role", role)
+                .withClaim("role", Integer.valueOf(role).equals(ConstVariable.STUDENT) ? "student" : "teacher")
                 .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION))
                 .withIssuedAt(new Date(System.currentTimeMillis()))
                 .sign(Algorithm.HMAC256(password));
