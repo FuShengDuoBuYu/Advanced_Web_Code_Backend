@@ -19,8 +19,6 @@ import java.util.concurrent.TimeUnit;
 public class SocketIOConfig implements InitializingBean {
     @Resource
     public ClientCache clientCache;
-    @Value("${socketio.host}")
-    private String host;
     @Value("${socketio.port}")
     private Integer port;
     @Value("${socketio.bossCount}")
@@ -48,7 +46,7 @@ public class SocketIOConfig implements InitializingBean {
         com.corundumstudio.socketio.Configuration configuration = new com.corundumstudio.socketio.Configuration();
         configuration.setSocketConfig(socketConfig);
         // host在本地测试可以设置为localhost或者本机IP，在Linux服务器跑可换成服务器IP
-        configuration.setHostname(host);
+//        configuration.setHostname(host);
         configuration.setPort(port);
         // socket连接数大小（如只监听一个端口boss线程组为1即可）
         configuration.setBossThreads(1);
