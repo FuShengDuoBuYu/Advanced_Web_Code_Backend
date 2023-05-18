@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class SocketIOConfig implements InitializingBean {
     @Resource
-    private ClientCache clientCache;
+    public ClientCache clientCache;
     @Value("${socketio.host}")
     private String host;
     @Value("${socketio.port}")
@@ -63,7 +63,6 @@ public class SocketIOConfig implements InitializingBean {
 
         SocketIOServer server = new SocketIOServer(configuration);
         //添加事件监听器
-//        server.addListeners(socketIOHandler);
         server.addConnectListener(client -> {
             String roomId = client.getHandshakeData().getSingleUrlParam("roomId");
             String userName = client.getHandshakeData().getSingleUrlParam("userName");
@@ -92,16 +91,6 @@ public class SocketIOConfig implements InitializingBean {
         });
 
         server.addEventListener("init", JSONObject.class, (client, data, ackSender) -> {
-//            UserData userData = client.get("userData");
-//            System.out.println("userData " + userData);
-//            userData.model = data.getString("model");
-//            userData.colour = data.getString("colour");
-//            userData.x = data.getFloatValue("x");
-//            userData.y = data.getFloatValue("y");
-//            userData.z = data.getFloatValue("z");
-//            userData.heading = data.getFloatValue("h");
-//            userData.pb = data.getFloatValue("pb");
-//            userData.action = "Idle";
 
             UserInfo userInfo = client.get("userInfo");
             System.out.println("socket.init " + userInfo.username);
@@ -112,10 +101,15 @@ public class SocketIOConfig implements InitializingBean {
 
         });
 
-        server.addEventListener("chat message", JSONObject.class, (client, data, ackSender) -> {
-            System.out.println("socket.chat message " + data.getString("message"));
-            // 对data.id发送消息
-            server.getClient(UUID.fromString(data.getString("id"))).sendEvent("chat message", new Message(client.getSessionId().toString(), data.getString("message")));
+        server.addEventListener("chat", JSONObject.class, (client, data, ackSender) -> {
+            System.out.println("socket.chat message " + data.getString("userName") + data.getString("message"));
+            HashMap<UUID, SocketIOClient> clients = ClientCache.concurrentHashMap.get(data.getString("roomId"));
+            for (Map.Entry<UUID, SocketIOClient> entry: clients.entrySet()){
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("userName", data.getString("userName"));
+                jsonObject.put("message", data.getString("message"));
+                entry.getValue().sendEvent("chat", jsonObject);
+            }
         });
 
         server.addEventListener("move", JSONObject.class, (client, data, ackSender) -> {
@@ -133,25 +127,25 @@ public class SocketIOConfig implements InitializingBean {
         executorService.scheduleAtFixedRate(() -> {
             try{
 //                System.out.println("定时任务" + server.getAllClients().size());
-                List<JSONObject> pack = new ArrayList<>();
-                //从clientCache.getUserClient("1")获取到所有client
-                for (SocketIOClient client : server.getAllClients()) {
-                    UserInfo userInfo = client.get("userInfo");
-                    JSONObject data = new JSONObject();
-                    data.put("id", userInfo.id);
-                    data.put("username", userInfo.username);
-                    data.put("rolename", userInfo.rolename);
-                    data.put("x", userInfo.x);
-                    data.put("y", userInfo.y);
-                    data.put("z", userInfo.z);
-                    pack.add(data);
-                }
-                if(pack.size() > 0) {
-                    for(SocketIOClient client : server.getAllClients()) {
-                        client.sendEvent("remoteData", pack);
+                // 遍历整个concurrentHashMap，以key为id，value为SocketIOClient
+                for (Map.Entry<String, HashMap<UUID, SocketIOClient>> entry: ClientCache.concurrentHashMap.entrySet()){
+                    List<JSONObject> pack = new ArrayList<>();
+                    for (Map.Entry<UUID, SocketIOClient> entry1: entry.getValue().entrySet()){
+                        UserInfo userInfo = entry1.getValue().get("userInfo");
+                        JSONObject data = new JSONObject();
+                        data.put("id", userInfo.id);
+                        data.put("username", userInfo.username);
+                        data.put("rolename", userInfo.rolename);
+                        data.put("x", userInfo.x);
+                        data.put("y", userInfo.y);
+                        data.put("z", userInfo.z);
+                        pack.add(data);
                     }
-                    // 打印pack
-//                    System.out.println("pack " + pack);
+                    if (pack.size() > 0) {
+                        for (Map.Entry<UUID, SocketIOClient> entry1: entry.getValue().entrySet()){
+                            entry1.getValue().sendEvent("remoteData", pack);
+                        }
+                    }
                 }
             } catch (Throwable e) {
                 e.printStackTrace();
