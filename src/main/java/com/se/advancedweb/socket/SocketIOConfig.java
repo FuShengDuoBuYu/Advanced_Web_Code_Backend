@@ -74,7 +74,7 @@ public class SocketIOConfig implements InitializingBean {
             jsonObject.put("id", client.getSessionId().toString());
             client.sendEvent("setId", jsonObject);
 
-            client.set("userInfo", new UserInfo(client.getSessionId().toString(), "", userName,0,0,0));
+            client.set("userInfo", new UserInfo(client.getSessionId().toString(), "", userName,0,0,0,0));
         });
 
         server.addDisconnectListener(client -> {
@@ -96,7 +96,7 @@ public class SocketIOConfig implements InitializingBean {
             userInfo.x = data.getFloatValue("x");
             userInfo.y = data.getFloatValue("y");
             userInfo.z = data.getFloatValue("z");
-
+            userInfo.r = data.getFloatValue("r");
         });
 
         server.addEventListener("chat", JSONObject.class, (client, data, ackSender) -> {
@@ -118,6 +118,7 @@ public class SocketIOConfig implements InitializingBean {
             userInfo.x = data.getFloatValue("x");
             userInfo.y = data.getFloatValue("y");
             userInfo.z = data.getFloatValue("z");
+            userInfo.r = data.getFloatValue("r");
         });
 
         // 添加定时任务
@@ -137,6 +138,7 @@ public class SocketIOConfig implements InitializingBean {
                         data.put("x", userInfo.x);
                         data.put("y", userInfo.y);
                         data.put("z", userInfo.z);
+                        data.put("r", userInfo.r);
                         pack.add(data);
                     }
                     if (pack.size() > 0) {
