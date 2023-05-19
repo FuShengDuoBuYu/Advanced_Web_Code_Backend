@@ -68,13 +68,12 @@ public class SocketIOConfig implements InitializingBean {
             clientCache.saveClient(roomId, sessionId, client);
             System.out.println(" 用户" + userName + " 加入房间 - " + sessionId);
 
-            // 设置 client.userData
-            client.set("userData", new UserData(0, 0, 0, 0));
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("id", client.getSessionId().toString());
-            client.sendEvent("setId", jsonObject);
-
             client.set("userInfo", new UserInfo(client.getSessionId().toString(), "", userName,0,0,0,0));
+
+            // 初始化block
+            for (BlockInfo blockInfo: clientCache.getBlockInfo(roomId)) {
+                client.sendEvent("addBlock", blockInfo);
+            }
         });
 
         server.addDisconnectListener(client -> {
@@ -89,7 +88,6 @@ public class SocketIOConfig implements InitializingBean {
         });
 
         server.addEventListener("init", JSONObject.class, (client, data, ackSender) -> {
-
             UserInfo userInfo = client.get("userInfo");
             System.out.println("socket.init " + userInfo.username);
             userInfo.rolename = data.getString("rolename");
@@ -119,6 +117,32 @@ public class SocketIOConfig implements InitializingBean {
             userInfo.y = data.getFloatValue("y");
             userInfo.z = data.getFloatValue("z");
             userInfo.r = data.getFloatValue("r");
+        });
+
+        server.addEventListener("addBlock", JSONObject.class, (client, data, ackSender) -> {
+            System.out.println("socket.block " + data.toJSONString());
+            String roomId = data.getString("roomId");
+            BlockInfo blockInfo = new BlockInfo(data.getFloatValue("x1"), data.getFloatValue("y1"), data.getFloatValue("z1"),
+                    data.getFloatValue("x2"), data.getFloatValue("y2"), data.getFloatValue("z2"));
+            clientCache.saveBlockInfo(roomId, blockInfo);
+
+            // 广播添加消息
+            for (Map.Entry<UUID, SocketIOClient> entry: clientCache.getClients(roomId).entrySet()){
+                entry.getValue().sendEvent("addBlock", data);
+            }
+        });
+
+        server.addEventListener("deleteBlock", JSONObject.class, (client, data, ackSender) -> {
+            System.out.println("socket.deleteBlock " + data.toJSONString());
+            String roomId = data.getString("roomId");
+            BlockInfo blockInfo = new BlockInfo(data.getFloatValue("x1"), data.getFloatValue("y1"), data.getFloatValue("z1"),
+                    data.getFloatValue("x2"), data.getFloatValue("y2"), data.getFloatValue("z2"));
+            clientCache.deleteBlockInfo(roomId, blockInfo);
+
+            // 广播删除消息
+            for (Map.Entry<UUID, SocketIOClient> entry: clientCache.getClients(roomId).entrySet()){
+                entry.getValue().sendEvent("deleteBlock", data);
+            }
         });
 
         // 添加定时任务
