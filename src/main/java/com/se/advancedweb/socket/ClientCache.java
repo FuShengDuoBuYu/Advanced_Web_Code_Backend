@@ -38,8 +38,10 @@ public class ClientCache {
         List<BlockInfo> blockInfos = blockInfoMap.get(roomId);
         if(blockInfos == null){
             blockInfos = new ArrayList<>();
+            blockInfoMap.put(roomId, blockInfos);
         }
         blockInfos.add(blockInfo);
+        System.out.println(blockInfos);
     }
 
     public List<BlockInfo> getBlockInfo(String roomId){
@@ -47,6 +49,20 @@ public class ClientCache {
     }
 
     public void deleteBlockInfo(String roomId, BlockInfo blockInfo){
-        blockInfoMap.get(roomId).remove(blockInfo);
+        List<BlockInfo> list = blockInfoMap.get(roomId);
+        System.out.println("before" + list);
+        for (int i = 0; i < list.size(); i++) {
+            BlockInfo blockInfo1 = list.get(i);
+            // float类型比较大小
+            if (Math.abs(blockInfo1.x1 - blockInfo.x1) < 0.0001
+                    && Math.abs(blockInfo1.y1 - blockInfo.y1) < 0.0001
+                    && Math.abs(blockInfo1.z1 - blockInfo.z1) < 0.0001 ) {
+                list.remove(i);
+                break;
+            }
+        }
+        System.out.println("after" + list);
+        //更新blockInfomap的值】
+        blockInfoMap.put(roomId, list);
     }
 }

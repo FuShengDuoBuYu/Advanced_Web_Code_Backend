@@ -121,6 +121,7 @@ public class SocketIOConfig implements InitializingBean {
 
         server.addEventListener("addBlock", JSONObject.class, (client, data, ackSender) -> {
             System.out.println("socket.block " + data.toJSONString());
+//            System.out.println(ClientCache.blockInfoMap.get(data.getString("roomId")));
             String roomId = data.getString("roomId");
             BlockInfo blockInfo = new BlockInfo(data.getFloatValue("x1"), data.getFloatValue("y1"), data.getFloatValue("z1"),
                     data.getFloatValue("x2"), data.getFloatValue("y2"), data.getFloatValue("z2"));
