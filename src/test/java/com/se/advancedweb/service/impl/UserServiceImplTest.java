@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.auth0.jwt.JWT;
 import com.se.advancedweb.entity.CourseSelection;
 import com.se.advancedweb.entity.User;
-import com.se.advancedweb.mapper.CourseMapper;
-import com.se.advancedweb.mapper.CourseSelectionMapper;
-import com.se.advancedweb.mapper.UserLoginHistoryMapper;
-import com.se.advancedweb.mapper.UserMapper;
+import com.se.advancedweb.mapper.*;
 import com.se.advancedweb.util.Response;
 import com.se.advancedweb.util.TokenUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +23,8 @@ class UserServiceImplTest {
     private UserServiceImpl userService;
     private CourseMapper courseMapper;
     private CourseSelectionMapper courseSelectionMapper;
+    private UserChatMessageMapper userChatMessageMapper;
+    private UserConnectDurationMapper userConnectDurationMapper;
     @BeforeEach
     void setUp() {
         // 创建一个模拟的 User 对象
@@ -39,7 +38,10 @@ class UserServiceImplTest {
         userMapper = Mockito.mock(UserMapper.class);
         courseMapper = Mockito.mock(CourseMapper.class);
         courseSelectionMapper = Mockito.mock(CourseSelectionMapper.class);
-        userService = new UserServiceImpl(userMapper, userLoginHistoryMapper, courseMapper, courseSelectionMapper);
+        userChatMessageMapper = Mockito.mock(UserChatMessageMapper.class);
+        userConnectDurationMapper = Mockito.mock(UserConnectDurationMapper.class);
+
+        userService = new UserServiceImpl(userMapper, userLoginHistoryMapper, courseMapper, courseSelectionMapper, userChatMessageMapper, userConnectDurationMapper);
     }
 
     @Test

@@ -25,4 +25,7 @@ public interface UserService {
     public Response<?> joinCourse(String token, String courseName);
 
     public Response<?> getCourse(String token);
+
+    public Response<?> getConnectDuration(String token);
+    public Response<?> getAllConnectDuration();
 }

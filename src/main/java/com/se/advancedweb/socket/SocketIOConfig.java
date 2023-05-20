@@ -3,13 +3,21 @@ package com.se.advancedweb.socket;
 import com.alibaba.fastjson.JSONObject;
 import com.corundumstudio.socketio.SocketConfig;
 import com.corundumstudio.socketio.SocketIOClient;
-import com.corundumstudio.socketio.SocketIONamespace;
 import com.corundumstudio.socketio.SocketIOServer;
+import com.se.advancedweb.entity.User;
+import com.se.advancedweb.entity.UserChatMessage;
+import com.se.advancedweb.entity.UserConnectDuration;
+import com.se.advancedweb.mapper.UserChatMessageMapper;
+import com.se.advancedweb.mapper.UserConnectDurationMapper;
+import com.se.advancedweb.mapper.UserMapper;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,6 +43,16 @@ public class SocketIOConfig implements InitializingBean {
     @Value("${socketio.pingInterval}")
     private int pingInterval;
 
+    private UserConnectDurationMapper userConnectDurationMapper;
+    private UserMapper userMapper;
+    private UserChatMessageMapper userChatMessageMapper;
+
+    @Autowired
+    public SocketIOConfig(UserConnectDurationMapper userConnectDurationMapper, UserMapper userMapper, UserChatMessageMapper userChatMessageMapper){
+        this.userConnectDurationMapper = userConnectDurationMapper;
+        this.userMapper = userMapper;
+        this.userChatMessageMapper = userChatMessageMapper;
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -64,6 +82,9 @@ public class SocketIOConfig implements InitializingBean {
         server.addConnectListener(client -> {
             String roomId = client.getHandshakeData().getSingleUrlParam("roomId");
             String userName = client.getHandshakeData().getSingleUrlParam("userName");
+            // 加入连接时间戳
+            client.set("connectTime", Instant.now());
+
             UUID sessionId = client.getSessionId();
             clientCache.saveClient(roomId, sessionId, client);
             System.out.println(" 用户" + userName + " 加入房间 - " + sessionId);
@@ -79,6 +100,16 @@ public class SocketIOConfig implements InitializingBean {
         server.addDisconnectListener(client -> {
             String roomId = client.getHandshakeData().getSingleUrlParam("roomId");
             String userName = client.getHandshakeData().getSingleUrlParam("userName");
+            // 计算连接时间
+            Instant connectTime = client.get("connectTime");
+            Instant disconnectTime = Instant.now();
+            long duration = disconnectTime.getEpochSecond() - connectTime.getEpochSecond();
+            // 保存连接时间
+            String realUserName = userName.split("-")[1];
+            User user = userMapper.findByUsername(realUserName);
+            UserConnectDuration userConnectDuration = new UserConnectDuration(duration, roomId, user);
+            userConnectDurationMapper.save(userConnectDuration);
+
             UUID sessionId = client.getSessionId();
             clientCache.deleteSessionClientByUserId(roomId, sessionId);
             System.out.println("roomId: " + roomId + " 用户" + userName + " 退出房间 - " + sessionId);
@@ -99,6 +130,14 @@ public class SocketIOConfig implements InitializingBean {
 
         server.addEventListener("chat", JSONObject.class, (client, data, ackSender) -> {
             System.out.println("socket.chat message " + data.getString("userName") + data.getString("message"));
+            // 存储聊天记录
+            String realUserName = data.getString("userName").split("-")[1];
+            User user = userMapper.findByUsername(realUserName);
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            UserChatMessage userChatMessage = new UserChatMessage(data.getString("message"), timestamp, user);
+            userChatMessageMapper.save(userChatMessage);
+
+
             HashMap<UUID, SocketIOClient> clients = ClientCache.concurrentHashMap.get(data.getString("roomId"));
             for (Map.Entry<UUID, SocketIOClient> entry: clients.entrySet()){
                 JSONObject jsonObject = new JSONObject();

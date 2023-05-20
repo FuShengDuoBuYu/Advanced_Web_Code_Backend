@@ -80,4 +80,17 @@ public class UserController {
     public Response<?> getCourse(@RequestHeader("token") String token) {
         return userService.getCourse(token);
     }
+
+    @ApiOperation(value = "获取用户在线时间")
+    @VerifyToken
+    @GetMapping("/getConnectDuration")
+    public Response<?> getConnectDuration(@RequestHeader("token") String token) {
+        return userService.getConnectDuration(token);
+    }
+    @ApiOperation(value = "获取所有用户在线时间")
+    @VerifyToken
+    @GetMapping("/getAllConnectDuration")
+    public Response<?> getAllConnectDuration() {
+        return userService.getAllConnectDuration();
+    }
 }

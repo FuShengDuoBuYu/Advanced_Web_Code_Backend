@@ -7,4 +7,7 @@ public class ConstVariable {
     public static final Integer STUDENT = 1;
     public static final Integer TEACHER = 2;
 
+    public static final String CONNECT_OPERATION = "connect";
+    public static final String DISCONNECT_OPERATION = "disconnect";
+
 }

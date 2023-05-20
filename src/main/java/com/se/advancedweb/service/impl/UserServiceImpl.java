@@ -1,16 +1,10 @@
 package com.se.advancedweb.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.se.advancedweb.entity.Course;
-import com.se.advancedweb.entity.CourseSelection;
-import com.se.advancedweb.entity.User;
-import com.se.advancedweb.entity.UserLoginHistory;
+import com.se.advancedweb.entity.*;
 import com.se.advancedweb.entity.VO.CourseStudentVO;
 import com.se.advancedweb.entity.VO.CourseTeacherVO;
-import com.se.advancedweb.mapper.CourseMapper;
-import com.se.advancedweb.mapper.CourseSelectionMapper;
-import com.se.advancedweb.mapper.UserLoginHistoryMapper;
-import com.se.advancedweb.mapper.UserMapper;
+import com.se.advancedweb.mapper.*;
 import com.se.advancedweb.service.UserService;
 import com.se.advancedweb.util.ConstVariable;
 import com.se.advancedweb.util.Response;
@@ -20,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -28,12 +23,16 @@ public class UserServiceImpl implements UserService {
     private UserLoginHistoryMapper userLoginHistoryMapper;
     private CourseMapper courseMapper;
     private CourseSelectionMapper courseSelectionMapper;
+    private UserChatMessageMapper userChatMessageMapper;
+    private UserConnectDurationMapper userConnectDurationMapper;
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, UserLoginHistoryMapper userLoginHistoryMapper, CourseMapper courseMapper, CourseSelectionMapper courseSelectionMapper) {
+    public UserServiceImpl(UserMapper userMapper, UserLoginHistoryMapper userLoginHistoryMapper, CourseMapper courseMapper, CourseSelectionMapper courseSelectionMapper, UserChatMessageMapper userChatMessageMapper, UserConnectDurationMapper userConnectDurationMapper) {
         this.userMapper = userMapper;
         this.userLoginHistoryMapper = userLoginHistoryMapper;
         this.courseMapper = courseMapper;
         this.courseSelectionMapper = courseSelectionMapper;
+        this.userChatMessageMapper = userChatMessageMapper;
+        this.userConnectDurationMapper = userConnectDurationMapper;
     }
     @Override
     public Response<?> login(String username, String password) {
@@ -159,5 +158,30 @@ public class UserServiceImpl implements UserService {
         else {
             return new Response<>(false, "获取课程失败");
         }
+    }
+    @Override
+    public Response<?> getConnectDuration(String token){
+        String id = TokenUtil.getUserId(token);
+        User user = userMapper.findByUserId(Integer.parseInt(id));
+        List<UserConnectDuration> userConnectDurations = userConnectDurationMapper.findByUser(user);
+        int totalDuration = 0;
+        for (UserConnectDuration userConnectDuration : userConnectDurations){
+            totalDuration += userConnectDuration.getDuration();
+        }
+        return new Response<>(true, "获取用户连接时长成功(单位：秒）", totalDuration);
+    }
+    @Override
+    public Response<?> getAllConnectDuration(){
+        HashMap<String, Integer> map = new HashMap<>();
+        List<User> users= userMapper.findAll();
+        for(User user : users){
+            List<UserConnectDuration> userConnectDurations = userConnectDurationMapper.findByUser(user);
+            int totalDuration = 0;
+            for (UserConnectDuration userConnectDuration : userConnectDurations){
+                totalDuration += userConnectDuration.getDuration();
+            }
+            map.put(user.getUsername(), totalDuration);
+        }
+        return new Response<>(true, "获取所有用户连接时长成功(单位：秒）", map);
     }
 }
