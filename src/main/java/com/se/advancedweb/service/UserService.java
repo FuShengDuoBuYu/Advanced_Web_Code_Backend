@@ -21,11 +21,12 @@ public interface UserService {
     public Response<?> logout(String token);
 
     public Response<?> createCourse(String token, String courseName, String courseDescription);
-
+    public Response<?> deleteCourse(String token, String courseName);
     public Response<?> joinCourse(String token, String courseName);
 
     public Response<?> getCourse(String token);
 
     public Response<?> getConnectDuration(String token);
     public Response<?> getAllConnectDuration();
+
 }

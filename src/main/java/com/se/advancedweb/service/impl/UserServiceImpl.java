@@ -107,6 +107,20 @@ public class UserServiceImpl implements UserService {
         courseMapper.save(course);
         return new Response<>(true, "创建课程成功");
     }
+    @Override
+    public Response<?> deleteCourse(String token, String courseName){
+        String id = TokenUtil.getUserId(token);
+        User user = userMapper.findByUserId(Integer.parseInt(id));
+        if (user.getRole() != ConstVariable.TEACHER){
+            return new Response<>(false, "您没有权限删除课程！");
+        }
+        Course course = courseMapper.findByCourseName(courseName);
+        if (course == null){
+            return new Response<>(false, "课程不存在！");
+        }
+        courseMapper.deleteByCourseName(courseName);
+        return new Response<>(true, "删除课程成功");
+    }
 
     @Override
     public Response<?> joinCourse(String token, String courseName){

@@ -65,6 +65,13 @@ public class UserController {
         String courseDescription = body.getString("courseDescription");
         return userService.createCourse(token, courseName, courseDescription);
     }
+    @ApiOperation(value = "老师删除课程")
+    @VerifyToken
+    @DeleteMapping("/deleteCourse")
+    public Response<?> deleteCourse(@RequestHeader("token") String token, @RequestBody JSONObject body) {
+        String courseName = body.getString("courseName");
+        return userService.deleteCourse(token, courseName);
+    }
 
     @ApiOperation(value = "学生加入课程")
     @VerifyToken
