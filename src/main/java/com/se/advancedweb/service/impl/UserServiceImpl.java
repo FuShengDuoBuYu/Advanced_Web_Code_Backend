@@ -96,14 +96,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Response<?> createCourse(String token, String courseName, String courseDescription){
+    public Response<?> createCourse(String token, String courseName, String courseDescription, String building, int isOver){
         String id = TokenUtil.getUserId(token);
         User user = userMapper.findByUserId(Integer.parseInt(id));
         if (user.getRole() != ConstVariable.TEACHER){
             return new Response<>(false, "您没有权限创建课程！");
         }
 
-        Course course = new Course(courseName, courseDescription, user);
+        Course course = new Course(courseName, courseDescription, user, building, isOver);
         courseMapper.save(course);
         return new Response<>(true, "创建课程成功");
     }

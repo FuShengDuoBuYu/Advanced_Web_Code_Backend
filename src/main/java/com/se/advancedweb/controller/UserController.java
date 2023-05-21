@@ -63,7 +63,9 @@ public class UserController {
     public Response<?> createCourse(@RequestHeader("token") String token, @RequestBody JSONObject body) {
         String courseName = body.getString("courseName");
         String courseDescription = body.getString("courseDescription");
-        return userService.createCourse(token, courseName, courseDescription);
+        String building = body.getString("building");
+        int isOver = body.getInteger("isOver");
+        return userService.createCourse(token, courseName, courseDescription, building, isOver);
     }
     @ApiOperation(value = "老师删除课程")
     @VerifyToken

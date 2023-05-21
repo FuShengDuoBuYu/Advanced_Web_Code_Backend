@@ -27,14 +27,22 @@ public class Course {
     @Column(name = "course_description", length = 256, nullable = false)
     private String courseDescription;
 
+    @Column(name = "building", length = 256, nullable = false)
+    private String building;
+
+    @Column(name = "is_over", length = 256, nullable = false)
+    private int isOver;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User teacher;
 
-    public Course(String courseName, String courseDescription,User teacher) {
+    public Course(String courseName, String courseDescription,User teacher, String building, int isOver) {
         this.courseName = courseName;
         this.courseDescription = courseDescription;
         this.teacher = teacher;
+        this.building = building;
+        this.isOver = isOver;
     }
 
 
