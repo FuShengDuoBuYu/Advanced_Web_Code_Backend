@@ -115,7 +115,7 @@ class UserServiceImplTest {
         users.add(user);
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findAll()).thenReturn(users);
-        List<User> responseData = userService.getAllUser();
+        List<User> responseData = (List<User>) userService.getAllUser().getData();
         assertEquals(1, responseData.size());
         assertEquals("TestUser", responseData.get(0).getUsername());
     }

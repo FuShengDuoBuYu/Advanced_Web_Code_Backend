@@ -46,8 +46,8 @@ public class UserController {
     @ApiOperation(value = "获取所有用户", hidden = true)
     @VerifyToken
     @GetMapping("/all")
-    public String helloUser() {
-        return userService.getAllUser().toString();
+    public Response<?> helloUser() {
+        return userService.getAllUser();
     }
 
     @ApiOperation(value = "用户登出")

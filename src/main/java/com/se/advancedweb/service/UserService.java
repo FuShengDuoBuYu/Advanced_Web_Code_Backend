@@ -14,7 +14,7 @@ public interface UserService {
     public Response<?> register(String username, String password, int role);
 
     // 获取所有用户
-     public List<User> getAllUser();
+     public Response<?> getAllUser();
     // 通过id获取用户
     public User findUserById(String id);
 

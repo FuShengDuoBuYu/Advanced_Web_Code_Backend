@@ -77,8 +77,8 @@ public class UserServiceImpl implements UserService {
         return new Response<>(true, "注册成功！");
     }
     @Override
-    public List<User> getAllUser() {
-        return userMapper.findAll();
+    public Response<?> getAllUser() {
+        return new Response<>(true, "获取所有用户成功！", userMapper.findAll());
     }
     @Override
     public User findUserById(String id) {
@@ -164,11 +164,17 @@ public class UserServiceImpl implements UserService {
         String id = TokenUtil.getUserId(token);
         User user = userMapper.findByUserId(Integer.parseInt(id));
         List<UserConnectDuration> userConnectDurations = userConnectDurationMapper.findByUser(user);
-        int totalDuration = 0;
+        HashMap<String, Long> map = new HashMap<>();
         for (UserConnectDuration userConnectDuration : userConnectDurations){
-            totalDuration += userConnectDuration.getDuration();
+            if (map.containsKey(userConnectDuration.getRoomId())){
+                // 更新值
+                map.put(userConnectDuration.getRoomId(), map.get(userConnectDuration.getRoomId()) + userConnectDuration.getDuration());
+            }
+            else {
+                map.put(userConnectDuration.getRoomId(), userConnectDuration.getDuration());
+            }
         }
-        return new Response<>(true, "获取用户连接时长成功(单位：秒）", totalDuration);
+        return new Response<>(true, "获取用户连接时长成功(单位：秒）", map);
     }
     @Override
     public Response<?> getAllConnectDuration(){
