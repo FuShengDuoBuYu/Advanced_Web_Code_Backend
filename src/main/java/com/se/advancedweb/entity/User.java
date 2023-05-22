@@ -1,5 +1,6 @@
 package com.se.advancedweb.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,6 +23,7 @@ public class User {
     private int userId;
     @Column(name = "username", length = 256, nullable = false)
     private String username;
+    @JsonIgnore
     @Column(name = "password", length = 256, nullable = false)
     private String password;
     @Column(name = "role", nullable = false)

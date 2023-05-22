@@ -107,6 +107,12 @@ public class UserServiceImpl implements UserService {
         courseMapper.save(course);
         return new Response<>(true, "创建课程成功");
     }
+
+    @Override
+    public Response<?> getCourseByBuilding(String building) {
+        return new Response<>(true, "获取所有课程成功！", courseMapper.findByBuilding(building));
+    }
+
     @Override
     public Response<?> deleteCourse(String token, String courseName){
         String id = TokenUtil.getUserId(token);

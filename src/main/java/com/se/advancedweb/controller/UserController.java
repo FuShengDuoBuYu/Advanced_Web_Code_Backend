@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jackson.JsonObjectDeserializer;
 import org.springframework.web.bind.annotation.*;
 
-@Api(tags = "用户管理")
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -73,6 +72,13 @@ public class UserController {
     public Response<?> deleteCourse(@RequestHeader("token") String token, @RequestBody JSONObject body) {
         String courseName = body.getString("courseName");
         return userService.deleteCourse(token, courseName);
+    }
+
+    @ApiOperation(value = "通过教学楼获取课程")
+    @GetMapping("/getCourseByBuilding")
+    public Response<?> getCourseByBuilding(@RequestBody JSONObject body) {
+        String building = body.getString("building");
+        return userService.getCourseByBuilding(building);
     }
 
     @ApiOperation(value = "学生加入课程")

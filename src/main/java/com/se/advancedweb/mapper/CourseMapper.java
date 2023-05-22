@@ -16,6 +16,8 @@ public interface CourseMapper extends JpaRepository<Course, Long> {
 
     List<Course> findByTeacher(User teacher);
 
+    List<Course> findByBuilding(String building);
+
     @Transactional
     Integer deleteByCourseName(String name);
 }
