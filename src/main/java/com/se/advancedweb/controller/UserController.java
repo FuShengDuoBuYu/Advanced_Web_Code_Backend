@@ -75,9 +75,8 @@ public class UserController {
     }
 
     @ApiOperation(value = "通过教学楼获取课程")
-    @GetMapping("/getCourseByBuilding")
-    public Response<?> getCourseByBuilding(@RequestBody JSONObject body) {
-        String building = body.getString("building");
+    @GetMapping("/getCourseByBuilding/{building}")
+    public Response<?> getCourseByBuilding(@PathVariable("building") String building) {
         return userService.getCourseByBuilding(building);
     }
 
