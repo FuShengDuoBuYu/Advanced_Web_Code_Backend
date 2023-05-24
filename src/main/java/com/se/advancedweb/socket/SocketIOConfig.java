@@ -69,6 +69,7 @@ public class SocketIOConfig implements InitializingBean {
         // socket连接数大小（如只监听一个端口boss线程组为1即可）
         configuration.setBossThreads(1);
         configuration.setWorkerThreads(1000);
+        configuration.setMaxFramePayloadLength(1024 * 1024 * 1024);
         configuration.setAllowCustomRequests(allowCustomRequests);
         // 协议升级超时时间（毫秒），默认10秒。HTTP握手升级为ws协议超时时间
         configuration.setUpgradeTimeout(upgradeTimeout);
@@ -91,9 +92,12 @@ public class SocketIOConfig implements InitializingBean {
 
             client.set("userInfo", new UserInfo(client.getSessionId().toString(), "", userName,0,0,0,0));
 
-            // 初始化block
-            for (BlockInfo blockInfo: clientCache.getBlockInfo(roomId)) {
-                client.sendEvent("addBlock", blockInfo);
+            List<BlockInfo> blockInfoList = clientCache.getBlockInfo(roomId);
+            if (blockInfoList != null) {
+                // 初始化block
+                for (BlockInfo blockInfo: clientCache.getBlockInfo(roomId)) {
+                    client.sendEvent("addBlock", blockInfo);
+                }
             }
         });
 
@@ -147,6 +151,23 @@ public class SocketIOConfig implements InitializingBean {
             }
         });
 
+        server.addEventListener("speech", JSONObject.class, (client, data, ackSender) -> {
+            System.out.println("socket.speech message " + data.getString("userName"));
+            System.out.println("socket.speech message " + client);
+//            System.out.println(data.getString("message"));
+            HashMap<UUID, SocketIOClient> clients = ClientCache.concurrentHashMap.get(data.getString("roomId"));
+            for (Map.Entry<UUID, SocketIOClient> entry: clients.entrySet()){
+                if (entry.getValue().equals(client)) {
+                    continue;
+                }
+                System.out.println("socket.speech message " + entry.getValue());
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("userName", data.getString("userName"));
+                jsonObject.put("message", data.getString("message"));
+                entry.getValue().sendEvent("speech", jsonObject);
+            }
+        });
+
         server.addEventListener("move", JSONObject.class, (client, data, ackSender) -> {
 //            System.out.println("socket.move " + data.toJSONString());
             UserInfo userInfo = client.get("userInfo");
@@ -195,6 +216,7 @@ public class SocketIOConfig implements InitializingBean {
                     List<JSONObject> pack = new ArrayList<>();
                     for (Map.Entry<UUID, SocketIOClient> entry1: entry.getValue().entrySet()){
                         UserInfo userInfo = entry1.getValue().get("userInfo");
+                        if (userInfo.rolename == "") continue;
                         JSONObject data = new JSONObject();
                         data.put("id", userInfo.id);
                         data.put("username", userInfo.username);
