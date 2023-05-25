@@ -134,7 +134,7 @@ public class SocketIOConfig implements InitializingBean {
 
         server.addEventListener("chat", JSONObject.class, (client, data, ackSender) -> {
             System.out.println("socket.chat message " + data.getString("userName") + data.getString("message"));
-            if (data.getString("type") != "image"){
+            if (!Objects.equals(data.getString("type"), "image")){
                 // 存储聊天记录
                 String realUserName = data.getString("userName").split("-")[1];
                 User user = userMapper.findByUsername(realUserName);
