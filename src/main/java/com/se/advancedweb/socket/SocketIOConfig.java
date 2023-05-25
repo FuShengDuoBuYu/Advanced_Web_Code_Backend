@@ -134,13 +134,14 @@ public class SocketIOConfig implements InitializingBean {
 
         server.addEventListener("chat", JSONObject.class, (client, data, ackSender) -> {
             System.out.println("socket.chat message " + data.getString("userName") + data.getString("message"));
-            // 存储聊天记录
-            String realUserName = data.getString("userName").split("-")[1];
-            User user = userMapper.findByUsername(realUserName);
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            UserChatMessage userChatMessage = new UserChatMessage(data.getString("message"), timestamp, user);
-            userChatMessageMapper.save(userChatMessage);
-
+            if (data.getString("type") != "image"){
+                // 存储聊天记录
+                String realUserName = data.getString("userName").split("-")[1];
+                User user = userMapper.findByUsername(realUserName);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                UserChatMessage userChatMessage = new UserChatMessage(data.getString("message"), timestamp, user);
+                userChatMessageMapper.save(userChatMessage);
+            }
 
             HashMap<UUID, SocketIOClient> clients = ClientCache.concurrentHashMap.get(data.getString("roomId"));
             for (Map.Entry<UUID, SocketIOClient> entry: clients.entrySet()){
