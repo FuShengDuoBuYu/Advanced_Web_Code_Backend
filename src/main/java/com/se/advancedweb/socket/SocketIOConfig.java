@@ -147,6 +147,7 @@ public class SocketIOConfig implements InitializingBean {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("userName", data.getString("userName"));
                 jsonObject.put("message", data.getString("message"));
+                jsonObject.put("type", data.getString("type"));
                 entry.getValue().sendEvent("chat", jsonObject);
             }
         });
