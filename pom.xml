@@ -39,6 +39,7 @@
             <artifactId>java-jwt</artifactId>
             <version>3.4.0</version>
         </dependency>
+        <!--redis-->
         <!--fastjson-->
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -63,6 +64,7 @@
             <artifactId>springfox-swagger2</artifactId>
             <version>2.6.1</version>
         </dependency>
+
         <!-- guava 配合swagger使用 -->
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -98,6 +100,26 @@
             <groupId>io.socket</groupId>
             <artifactId>socket.io-client</artifactId>
             <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-json</artifactId>
+            <version>5.8.15</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-json</artifactId>
+            <version>5.8.15</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-http</artifactId>
+            <version>5.8.15</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-core</artifactId>
+            <version>5.8.15</version>
         </dependency>
 
     </dependencies>
