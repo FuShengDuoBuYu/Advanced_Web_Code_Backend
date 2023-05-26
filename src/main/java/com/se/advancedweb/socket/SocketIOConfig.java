@@ -4,9 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.corundumstudio.socketio.SocketConfig;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
+import com.se.advancedweb.entity.Course;
 import com.se.advancedweb.entity.User;
 import com.se.advancedweb.entity.UserChatMessage;
 import com.se.advancedweb.entity.UserConnectDuration;
+import com.se.advancedweb.mapper.CourseMapper;
 import com.se.advancedweb.mapper.UserChatMessageMapper;
 import com.se.advancedweb.mapper.UserConnectDurationMapper;
 import com.se.advancedweb.mapper.UserMapper;
@@ -45,13 +47,15 @@ public class SocketIOConfig implements InitializingBean {
 
     private UserConnectDurationMapper userConnectDurationMapper;
     private UserMapper userMapper;
+    private CourseMapper courseMapper;
     private UserChatMessageMapper userChatMessageMapper;
 
     @Autowired
-    public SocketIOConfig(UserConnectDurationMapper userConnectDurationMapper, UserMapper userMapper, UserChatMessageMapper userChatMessageMapper){
+    public SocketIOConfig(UserConnectDurationMapper userConnectDurationMapper, UserMapper userMapper, CourseMapper courseMapper, UserChatMessageMapper userChatMessageMapper){
         this.userConnectDurationMapper = userConnectDurationMapper;
         this.userMapper = userMapper;
         this.userChatMessageMapper = userChatMessageMapper;
+        this.courseMapper = courseMapper;
     }
 
     @Override
@@ -81,14 +85,14 @@ public class SocketIOConfig implements InitializingBean {
         SocketIOServer server = new SocketIOServer(configuration);
         //添加事件监听器
         server.addConnectListener(client -> {
-            String roomId = client.getHandshakeData().getSingleUrlParam("roomId");
+            int roomId = Integer.parseInt(client.getHandshakeData().getSingleUrlParam("roomId"));
             String userName = client.getHandshakeData().getSingleUrlParam("userName");
             // 加入连接时间戳
             client.set("connectTime", Instant.now());
 
             UUID sessionId = client.getSessionId();
             clientCache.saveClient(roomId, sessionId, client);
-            System.out.println(" 用户" + userName + " 加入房间 - " + sessionId);
+            System.out.println(" 用户" + userName + " 加入房间 - " + roomId);
 
             client.set("userInfo", new UserInfo(client.getSessionId().toString(), "", userName,0,0,0,0));
 
@@ -102,7 +106,8 @@ public class SocketIOConfig implements InitializingBean {
         });
 
         server.addDisconnectListener(client -> {
-            String roomId = client.getHandshakeData().getSingleUrlParam("roomId");
+            int roomId = Integer.parseInt(client.getHandshakeData().getSingleUrlParam("roomId"));
+            System.out.println("roomId: " + roomId);
             String userName = client.getHandshakeData().getSingleUrlParam("userName");
             // 计算连接时间
             Instant connectTime = client.get("connectTime");
@@ -111,12 +116,13 @@ public class SocketIOConfig implements InitializingBean {
             // 保存连接时间
             String realUserName = userName.split("-")[1];
             User user = userMapper.findByUsername(realUserName);
-            UserConnectDuration userConnectDuration = new UserConnectDuration(duration, roomId, user);
+            Course course = courseMapper.findByCourseId(roomId);
+            UserConnectDuration userConnectDuration = new UserConnectDuration(duration, course, user);
             userConnectDurationMapper.save(userConnectDuration);
 
             UUID sessionId = client.getSessionId();
             clientCache.deleteSessionClientByUserId(roomId, sessionId);
-            System.out.println("roomId: " + roomId + " 用户" + userName + " 退出房间 - " + sessionId);
+            System.out.println("roomId: " + roomId + " 用户" + userName + " 退出房间 - " + roomId);
 
             // 广播删除消息
             server.getBroadcastOperations().sendEvent("deletePlayer", new JSONObject().put("id", client.getSessionId().toString()));
@@ -138,12 +144,12 @@ public class SocketIOConfig implements InitializingBean {
                 // 存储聊天记录
                 String realUserName = data.getString("userName").split("-")[1];
                 User user = userMapper.findByUsername(realUserName);
-                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                UserChatMessage userChatMessage = new UserChatMessage(data.getString("message"), timestamp, user);
+                Course course = courseMapper.findByCourseId(data.getIntValue("roomId"));
+                UserChatMessage userChatMessage = new UserChatMessage(data.getString("message"), course, user);
                 userChatMessageMapper.save(userChatMessage);
             }
 
-            HashMap<UUID, SocketIOClient> clients = ClientCache.concurrentHashMap.get(data.getString("roomId"));
+            HashMap<UUID, SocketIOClient> clients = ClientCache.concurrentHashMap.get(data.getIntValue("roomId"));
             for (Map.Entry<UUID, SocketIOClient> entry: clients.entrySet()){
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("userName", data.getString("userName"));
@@ -157,7 +163,7 @@ public class SocketIOConfig implements InitializingBean {
             System.out.println("socket.speech message " + data.getString("userName"));
             System.out.println("socket.speech message " + client);
 //            System.out.println(data.getString("message"));
-            HashMap<UUID, SocketIOClient> clients = ClientCache.concurrentHashMap.get(data.getString("roomId"));
+            HashMap<UUID, SocketIOClient> clients = ClientCache.concurrentHashMap.get(data.getIntValue("roomId"));
             for (Map.Entry<UUID, SocketIOClient> entry: clients.entrySet()){
                 if (entry.getValue().equals(client)) {
                     continue;
@@ -184,7 +190,7 @@ public class SocketIOConfig implements InitializingBean {
         server.addEventListener("addBlock", JSONObject.class, (client, data, ackSender) -> {
             System.out.println("socket.block " + data.toJSONString());
 //            System.out.println(ClientCache.blockInfoMap.get(data.getString("roomId")));
-            String roomId = data.getString("roomId");
+            int roomId = data.getIntValue("roomId");
             BlockInfo blockInfo = new BlockInfo(data.getFloatValue("x1"), data.getFloatValue("y1"), data.getFloatValue("z1"),
                     data.getFloatValue("x2"), data.getFloatValue("y2"), data.getFloatValue("z2"));
             clientCache.saveBlockInfo(roomId, blockInfo);
@@ -197,7 +203,7 @@ public class SocketIOConfig implements InitializingBean {
 
         server.addEventListener("deleteBlock", JSONObject.class, (client, data, ackSender) -> {
             System.out.println("socket.deleteBlock " + data.toJSONString());
-            String roomId = data.getString("roomId");
+            int roomId = data.getIntValue("roomId");
             BlockInfo blockInfo = new BlockInfo(data.getFloatValue("x1"), data.getFloatValue("y1"), data.getFloatValue("z1"),
                     data.getFloatValue("x2"), data.getFloatValue("y2"), data.getFloatValue("z2"));
             clientCache.deleteBlockInfo(roomId, blockInfo);
@@ -214,7 +220,7 @@ public class SocketIOConfig implements InitializingBean {
             try{
 //                System.out.println("定时任务" + server.getAllClients().size());
                 // 遍历整个concurrentHashMap，以key为id，value为SocketIOClient
-                for (Map.Entry<String, HashMap<UUID, SocketIOClient>> entry: ClientCache.concurrentHashMap.entrySet()){
+                for (Map.Entry<Integer, HashMap<UUID, SocketIOClient>> entry: ClientCache.concurrentHashMap.entrySet()){
                     List<JSONObject> pack = new ArrayList<>();
                     for (Map.Entry<UUID, SocketIOClient> entry1: entry.getValue().entrySet()){
                         UserInfo userInfo = entry1.getValue().get("userInfo");

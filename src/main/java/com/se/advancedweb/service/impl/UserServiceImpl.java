@@ -186,12 +186,13 @@ public class UserServiceImpl implements UserService {
         List<UserConnectDuration> userConnectDurations = userConnectDurationMapper.findByUser(user);
         HashMap<String, Long> map = new HashMap<>();
         for (UserConnectDuration userConnectDuration : userConnectDurations){
-            if (map.containsKey(userConnectDuration.getRoomId())){
+            Course course = userConnectDuration.getCourse();
+            if (map.containsKey(course.getCourseName())){
                 // 更新值
-                map.put(userConnectDuration.getRoomId(), map.get(userConnectDuration.getRoomId()) + userConnectDuration.getDuration());
+                map.put(course.getCourseName(), map.get(course.getCourseName()) + userConnectDuration.getDuration());
             }
             else {
-                map.put(userConnectDuration.getRoomId(), userConnectDuration.getDuration());
+                map.put(course.getCourseName(), userConnectDuration.getDuration());
             }
         }
         return new Response<>(true, "获取用户连接时长成功(单位：秒）", map);

@@ -9,11 +9,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ClientCache {
     // 用户信息缓存
-    public static Map<String, HashMap<UUID, SocketIOClient>> concurrentHashMap = new ConcurrentHashMap<>();
-    public static Map<String, List<BlockInfo>> blockInfoMap = new ConcurrentHashMap<>();
+    public static Map<Integer, HashMap<UUID, SocketIOClient>> concurrentHashMap = new ConcurrentHashMap<>();
+    public static Map<Integer, List<BlockInfo>> blockInfoMap = new ConcurrentHashMap<>();
 
     //roomId-房间ID | sessionId-页面sessionId | socketIOClient-页面对应的通道连接
-    public void saveClient(String roomId,UUID sessionId,SocketIOClient socketIOClient){
+    public void saveClient(Integer roomId,UUID sessionId,SocketIOClient socketIOClient){
         HashMap<UUID, SocketIOClient> sessionIdClientCache = concurrentHashMap.get(roomId);
         if(sessionIdClientCache == null){
             sessionIdClientCache = new HashMap<>();
@@ -22,19 +22,19 @@ public class ClientCache {
         concurrentHashMap.put(roomId,sessionIdClientCache);
     }
 
-    public HashMap<UUID, SocketIOClient> getClients(String roomId){
+    public HashMap<UUID, SocketIOClient> getClients(Integer roomId){
         return concurrentHashMap.get(roomId);
     }
 
-    public HashMap<UUID,SocketIOClient> getClientsByRoomId(String roomId){
+    public HashMap<UUID,SocketIOClient> getClientsByRoomId(Integer roomId){
         return concurrentHashMap.get(roomId);
     }
 
-    public void deleteSessionClientByUserId(String userId,UUID sessionId){
+    public void deleteSessionClientByUserId(Integer userId,UUID sessionId){
         concurrentHashMap.get(userId).remove(sessionId);
     }
 
-    public void saveBlockInfo(String roomId, BlockInfo blockInfo){
+    public void saveBlockInfo(Integer roomId, BlockInfo blockInfo){
         List<BlockInfo> blockInfos = blockInfoMap.get(roomId);
         if(blockInfos == null){
             blockInfos = new ArrayList<>();
@@ -44,13 +44,13 @@ public class ClientCache {
         System.out.println(blockInfos);
     }
 
-    public List<BlockInfo> getBlockInfo(String roomId){
+    public List<BlockInfo> getBlockInfo(Integer roomId){
         return blockInfoMap.get(roomId);
     }
 
-    public void deleteBlockInfo(String roomId, BlockInfo blockInfo){
+    public void deleteBlockInfo(Integer roomId, BlockInfo blockInfo){
         List<BlockInfo> list = blockInfoMap.get(roomId);
-        System.out.println("before" + list);
+//        System.out.println("before" + list);
         for (int i = 0; i < list.size(); i++) {
             BlockInfo blockInfo1 = list.get(i);
             // float类型比较大小
@@ -61,8 +61,8 @@ public class ClientCache {
                 break;
             }
         }
-        System.out.println("after" + list);
-        //更新blockInfomap的值】
+//        System.out.println("after" + list);
+//        更新blockInfomap的值
         blockInfoMap.put(roomId, list);
     }
 }

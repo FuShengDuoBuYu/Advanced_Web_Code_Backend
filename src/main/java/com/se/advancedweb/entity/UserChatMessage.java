@@ -23,14 +23,15 @@ public class UserChatMessage {
     private int userChatMessageId;
     @Column(name = "message", length = 256, nullable = false)
     private String message;
-    @Column(name = "time", length = 256, nullable = false)
-    private Timestamp time;
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    public UserChatMessage(String message, Timestamp time,  User user) {
+    public UserChatMessage(String message, Course course, User user) {
         this.message = message;
-        this.time = time;
+        this.course = course;
         this.user = user;
     }
 }

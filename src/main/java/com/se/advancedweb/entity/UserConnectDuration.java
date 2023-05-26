@@ -21,14 +21,15 @@ public class UserConnectDuration {
     private int userConnectDurationId;
     @Column(name = "duration", length = 256, nullable = false)
     private Long duration;
-    @Column(name = "room_id", length = 256, nullable = false)
-    private String roomId;
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    public UserConnectDuration(Long duration, String roomId, User user) {
+    public UserConnectDuration(Long duration, Course course, User user) {
         this.duration = duration;
-        this.roomId = roomId;
+        this.course = course;
         this.user = user;
     }
 }
