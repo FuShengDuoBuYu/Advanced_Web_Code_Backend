@@ -159,15 +159,15 @@ public class SocketIOConfig implements InitializingBean {
                 entry.getValue().sendEvent("chat", jsonObject);
             }
         });
-        server.addEventListener("chatGPT", JSONObject.class, (client, data, ackSender) -> {
-            System.out.println("socket.chatGPT message " + data.getString("userName") + data.getString("message"));
+        server.addEventListener("AI_assistant", JSONObject.class, (client, data, ackSender) -> {
+            System.out.println("socket.AI_assistant message " + data.getString("userName") + data.getString("message"));
             List<Map<String, String>> dataList = data.getObject("dataList", List.class);
             String message = data.getString("message");
             String response = OpenAIAPI.chat(message, dataList);
-            System.out.println("socket.chatGPT response " + response);
+            System.out.println("socket.AI_assistant response " + response);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("message", response);
-            client.sendEvent("chatGPT", jsonObject);
+            client.sendEvent("AI_assistant", jsonObject);
         });
 
 

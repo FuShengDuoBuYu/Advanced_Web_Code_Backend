@@ -25,7 +25,7 @@ public class OpenAIAPI {
     String apiKey = "Bearer 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";
     public String chat(String txt, List<Map<String, String>> dataList) {
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("model", "gpt-3.5-turbo");
+        paramMap.put("model", "gpt-3.5-turbo-0301");
         paramMap.put("temperature", 0.6);
 
         dataList.add(new HashMap<String, String>(){{
