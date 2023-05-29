@@ -25,3 +25,39 @@ jobs:
         with:
           name: java-app
           path: target/*.jar
+      - uses: actions/checkout@v2
+      - name: Build Image
+        run: |
+          docker build -t annnfdu/advanced_web_backend .
+      - name: Login to Registry
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
+      - name: Push Image
+        run: |
+          docker push annnfdu/advanced_web_backend
+
+#  # Docker 自动部署
+#  deploy-docker:
+#    needs: [build]
+#    name: Deploy Docker
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Deploy
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ secrets.HOST }} # 服务器ip
+#          username: ${{ secrets.HOST_NAME }} # 服务器登录用户名
+#          password: ${{ secrets.HOST_PASSWORD }} # 服务器登录密码
+#          port: ${{ secrets.HOST_PORT }} # 服务器ssh端口
+#          script: |
+
+
+
+
+
+
+
+
+
+
+
+
