@@ -33,8 +33,20 @@ jobs:
       - name: Push Image
         run: |
           docker push annnfdu/advanced_web_backend
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.HOST_NAME }}
+          password: ${{ secrets.HOST_PASSWORD }}
+          port: ${{ secrets.HOST_PORT }}
+          script: |
+            docker pull annnfdu/advanced_web_backend
+            docker stop zja_advanced_web_backend
+            docker rm zja_advanced_web_backend
+            docker run -d --name zja_advanced_web_backend -p 10086:10086 -p 10088:10088 annnfdu/advanced_web_backend
 
-#  # Docker 自动部署
+  # Docker 自动部署
 #  deploy-docker:
 #    needs: [build]
 #    name: Deploy Docker
