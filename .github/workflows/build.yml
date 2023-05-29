@@ -25,7 +25,6 @@ jobs:
         with:
           name: java-app
           path: target/*.jar
-      - uses: actions/checkout@v2
       - name: Build Image
         run: |
           docker build -t annnfdu/advanced_web_backend .
