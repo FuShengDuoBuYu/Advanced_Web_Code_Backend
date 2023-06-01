@@ -15,7 +15,8 @@ import java.util.HashMap;
 @UtilityClass
 public class MossAPI {
     private String apiKey = "K7QKpcbCEK1p77a6JNKtOxuPggBU0cdL";
-    private String apiUrl = "http://124.220.26.113/api/inference"; // 校外
+    private String apiUrl = "http://10.176.52.122/api/inference"; // 校内
+//    private String apiUrl = "http://124.220.26.113/api/inference"; // 校外
 
 
     public HashMap<String, String> sendRequest(String message, String context) {
@@ -54,17 +55,19 @@ public class MossAPI {
     public static void main(String[] args) {
         // 示例1：不含有上下文的请求
         String requestText = "hi";
-        String response = MossAPI.sendRequest(requestText, "").get("response");
-        String context = MossAPI.sendRequest(requestText, "").get("context");
-        System.out.println(response);
-        System.out.println(context);
+        HashMap<String, String>result = MossAPI.sendRequest(requestText, "");
+        System.out.println("response:");
+        System.out.println(result.get("response"));
+        System.out.println("context:");
+        System.out.println(result.get("context"));
 
         // 示例2：含有上下文的请求
         requestText = "what's your name?";
-        response = MossAPI.sendRequest(requestText, context).get("response");
-        context = MossAPI.sendRequest(requestText, context).get("context");
-        System.out.println(response);
-        System.out.println(context);
+        HashMap<String, String>result2 = MossAPI.sendRequest(requestText, result.get("context"));
+        System.out.printf("response:");
+        System.out.println(result2.get("response"));
+        System.out.println("context:");
+        System.out.println(result2.get("context"));
     }
 }
 

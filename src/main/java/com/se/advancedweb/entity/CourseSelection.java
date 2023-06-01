@@ -14,7 +14,6 @@ import java.util.List;
 
 @Table(appliesTo = "course_selection", comment = "学生选课")
 @GenericGenerator(name ="increment", strategy = "increment")
-
 public class CourseSelection {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +30,4 @@ public class CourseSelection {
         this.course = course;
         this.student = student;
     }
-
-
 }

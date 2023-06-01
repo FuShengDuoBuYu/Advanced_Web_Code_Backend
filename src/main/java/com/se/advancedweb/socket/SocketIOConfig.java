@@ -12,7 +12,9 @@ import com.se.advancedweb.mapper.CourseMapper;
 import com.se.advancedweb.mapper.UserChatMessageMapper;
 import com.se.advancedweb.mapper.UserConnectDurationMapper;
 import com.se.advancedweb.mapper.UserMapper;
+import com.se.advancedweb.util.MossAPI;
 import com.se.advancedweb.util.OpenAIAPI;
+import org.springframework.aop.support.DelegatingIntroductionInterceptor;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -90,7 +92,6 @@ public class SocketIOConfig implements InitializingBean {
             String userName = client.getHandshakeData().getSingleUrlParam("userName");
             // 加入连接时间戳
             client.set("connectTime", Instant.now());
-
             UUID sessionId = client.getSessionId();
             clientCache.saveClient(roomId, sessionId, client);
             System.out.println(" 用户" + userName + " 加入房间 - " + roomId);
@@ -160,10 +161,25 @@ public class SocketIOConfig implements InitializingBean {
             }
         });
         server.addEventListener("AI_assistant", JSONObject.class, (client, data, ackSender) -> {
+            // 若client中没有存储moss_context字段，则初始化
+            if (client.get("moss_context") == null){
+                client.set("moss_context", "");
+            }
             System.out.println("socket.AI_assistant message " + data.getString("userName") + data.getString("message"));
             List<Map<String, String>> dataList = data.getObject("dataList", List.class);
             String message = data.getString("message");
-            String response = OpenAIAPI.chat(message, dataList);
+            String model = data.getString("model");
+            String response = "";
+            if (model.equals("gpt3.5")){
+                response = OpenAIAPI.chat(message, dataList);
+            }
+            if (model.equals("moss")){
+                String context = client.get("moss_context");
+                HashMap<String, String>result = MossAPI.sendRequest(message, context);
+                response = result.get("response");
+                context = result.get("context");
+                client.set("moss_context", context);
+            }
             System.out.println("socket.AI_assistant response " + response);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("message", response);

@@ -102,7 +102,6 @@ public class UserServiceImpl implements UserService {
         if (user.getRole() != ConstVariable.TEACHER){
             return new Response<>(false, "您没有权限创建课程！");
         }
-
         Course course = new Course(courseName, courseDescription, user, building, isOver);
         courseMapper.save(course);
         return new Response<>(true, "创建课程成功");
