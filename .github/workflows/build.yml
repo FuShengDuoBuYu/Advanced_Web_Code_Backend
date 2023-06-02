@@ -20,10 +20,10 @@ jobs:
         run: mvn -B package --file pom.xml
       - name: Test with Maven
         run: mvn test --file pom.xml
-      - name: Upload artifact for deployment job
+      - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: java-app
+          name: advanced_web_backend
           path: target/*.jar
       - name: Build Image
         run: |
@@ -45,30 +45,3 @@ jobs:
             docker stop zja_advanced_web_backend
             docker rm zja_advanced_web_backend
             docker run -d --name zja_advanced_web_backend -p 10086:10086 -p 10088:10088 annnfdu/advanced_web_backend
-
-  # Docker 自动部署
-#  deploy-docker:
-#    needs: [build]
-#    name: Deploy Docker
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Deploy
-#        uses: appleboy/ssh-action@master
-#        with:
-#          host: ${{ secrets.HOST }} # 服务器ip
-#          username: ${{ secrets.HOST_NAME }} # 服务器登录用户名
-#          password: ${{ secrets.HOST_PASSWORD }} # 服务器登录密码
-#          port: ${{ secrets.HOST_PORT }} # 服务器ssh端口
-#          script: |
-
-
-
-
-
-
-
-
-
-
-
-
