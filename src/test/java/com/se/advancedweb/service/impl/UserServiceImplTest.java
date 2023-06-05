@@ -10,13 +10,17 @@ import com.se.advancedweb.util.Response;
 import com.se.advancedweb.util.TokenUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+//@RunWith(MockitoJUnitRunner.class)
 class UserServiceImplTest {
     private User student;
     private User teacher;
@@ -26,6 +30,10 @@ class UserServiceImplTest {
     private List<CourseSelection> courseSelectionList;
     private String studentToken;
     private String teacherToken;
+    private UserConnectDuration userConnectDuration_1;
+    private UserConnectDuration userConnectDuration_2;
+    List<UserConnectDuration> userConnectDurationList;
+
     private UserLoginHistoryMapper userLoginHistoryMapper;
     private UserMapper userMapper;
     private UserServiceImpl userService;
@@ -55,6 +63,7 @@ class UserServiceImplTest {
         course.setCourseId(123);
         course.setCourseName("TestCourse");
         course.setTeacher(teacher);
+        course.setBuilding("TestBuilding");
         // 创建一个模拟的 Course列表
         courseList = new ArrayList<>();
         courseList.add(course);
@@ -75,6 +84,20 @@ class UserServiceImplTest {
         userChatMessageMapper = Mockito.mock(UserChatMessageMapper.class);
         userConnectDurationMapper = Mockito.mock(UserConnectDurationMapper.class);
 
+        // 创建一个模拟的 UserConnectDuration 对象
+        userConnectDuration_1 = new UserConnectDuration();
+        userConnectDuration_1.setUser(student);
+        userConnectDuration_1.setDuration(1000L);
+        userConnectDuration_1.setCourse(course);
+        userConnectDuration_2 = new UserConnectDuration();
+        userConnectDuration_2.setUser(student);
+        userConnectDuration_2.setDuration(2000L);
+        userConnectDuration_2.setCourse(course);
+        // 创建一个模拟的 UserConnectDuration 列表
+        userConnectDurationList = new ArrayList<>();
+        userConnectDurationList.add(userConnectDuration_1);
+        userConnectDurationList.add(userConnectDuration_2);
+
         userService = new UserServiceImpl(userMapper, userLoginHistoryMapper, courseMapper, courseSelectionMapper, userChatMessageMapper, userConnectDurationMapper);
     }
 
@@ -83,7 +106,7 @@ class UserServiceImplTest {
         Mockito.when(userMapper.findByUsername(Mockito.anyString())).thenReturn(student);
         // Act
         Response<?> response = userService.login("TestStudent", "password");
-
+        
         // Assert
         assertTrue(response.isSuccess());
         assertEquals("登陆成功！", response.getMessage());
@@ -104,6 +127,18 @@ class UserServiceImplTest {
         assertFalse(response.isSuccess());
         assertEquals("用户不存在！", response.getMessage());
         assertNull(response.getData());
+    }
+    @Test
+    public void Login_password_error(){
+// Arrange
+        Mockito.when(userMapper.findByUsername("TestStudent")).thenReturn(student);
+        // Act
+        Response<?> response = userService.login("TestStudent", "testPassword");
+        // Assert
+        assertFalse(response.isSuccess());
+        assertEquals("密码错误！", response.getMessage());
+        assertNull(response.getData());
+
     }
 
     @Test
@@ -142,7 +177,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getAllUser() {
+    public void getAllUser() {
         List<User> users = new ArrayList<>();
         users.add(student);
         // mock 掉 userMapper 的 findById 方法
@@ -153,7 +188,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findUserById() {
+    public void findUserById() {
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
         User responseData = userService.findUserById(String.valueOf(student.getUserId()));
@@ -161,7 +196,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void logout(){
+    public void logout(){
         // mock 掉 userMapper 的 findById 方法  以及 userLoginHistoryMapper 的 save 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
         Mockito.when(userLoginHistoryMapper.save(Mockito.any())).thenReturn(new UserLoginHistory());
@@ -172,7 +207,7 @@ class UserServiceImplTest {
         verify(userMapper, times(1)).findByUserId(Mockito.anyInt());
     }
     @Test
-    void createCourseFailed(){
+    public void createCourseFailed(){
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
         Mockito.when(courseMapper.save(Mockito.any())).thenReturn(1);
@@ -181,7 +216,7 @@ class UserServiceImplTest {
         assertEquals("您没有权限创建课程！", response.getMessage());
     }
     @Test
-    void createCourseSuccess(){
+    public void createCourseSuccess(){
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(teacher);
         Mockito.when(courseMapper.save(Mockito.any())).thenReturn(course);
@@ -192,7 +227,19 @@ class UserServiceImplTest {
         verify(userMapper, times(1)).findByUserId(Mockito.anyInt());
     }
     @Test
-    void deleteCourseRoleError(){
+    public void getCourseByBuildingTest(){
+        List<Course> courses = new ArrayList<>();
+        courses.add(course);
+        Mockito.when(courseMapper.findByBuilding(Mockito.anyString())).thenReturn(courses);
+        Response<?> response = userService.getCourseByBuilding("testBuilding");
+        assertTrue(response.isSuccess());
+        assertEquals("获取所有课程成功！", response.getMessage());
+        List<Course> responseData = (List<Course>) response.getData();
+        assertEquals(1, responseData.size());
+        assertEquals("TestCourse", responseData.get(0).getCourseName());
+    }
+    @Test
+    public void deleteCourseRoleError(){
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
         Response<?> response = userService.deleteCourse(studentToken, "testCourse");
@@ -200,7 +247,7 @@ class UserServiceImplTest {
         assertEquals("您没有权限删除课程！", response.getMessage());
     }
     @Test
-    void deleteCourseNameError(){
+    public void deleteCourseNameError(){
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(teacher);
         Mockito.when(courseMapper.findByCourseName(Mockito.anyString())).thenReturn(null);
@@ -209,7 +256,7 @@ class UserServiceImplTest {
         assertEquals("课程不存在！", response.getMessage());
     }
     @Test
-    void deleteCourse(){
+    public void deleteCourse(){
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(teacher);
         Mockito.when(courseMapper.findByCourseName(Mockito.anyString())).thenReturn(course);
@@ -220,7 +267,7 @@ class UserServiceImplTest {
         verify(courseMapper, times(1)).deleteByCourseName(Mockito.anyString());
     }
     @Test
-    void joinCourseRoleError(){
+    public void joinCourseRoleError(){
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(teacher);
         Response<?> response = userService.joinCourse(teacherToken, "testCourse");
@@ -228,7 +275,7 @@ class UserServiceImplTest {
         assertEquals("您没有权限加入课程！", response.getMessage());
     }
     @Test
-    void joinCourseNameError(){
+    public void joinCourseNameError(){
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
         Mockito.when(courseMapper.findByCourseName(Mockito.anyString())).thenReturn(null);
@@ -237,7 +284,7 @@ class UserServiceImplTest {
         assertEquals("课程不存在！", response.getMessage());
     }
     @Test
-    void joinCourseAlreadyError(){
+    public void joinCourseAlreadyError(){
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
         Mockito.when(courseMapper.findByCourseName(Mockito.anyString())).thenReturn(course);
@@ -248,7 +295,7 @@ class UserServiceImplTest {
         assertEquals("您已经加入该课程！", response.getMessage());
     }
     @Test
-    void joinCourse(){
+    public void joinCourse(){
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
         Mockito.when(courseMapper.findByCourseName(Mockito.anyString())).thenReturn(course);
@@ -260,7 +307,7 @@ class UserServiceImplTest {
         verify(courseSelectionMapper, times(1)).save(Mockito.any());
     }
     @Test
-    void getCourseStudent(){
+    public void getCourseStudent(){
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
         Mockito.when(courseSelectionMapper.findByStudent(student)).thenReturn(courseSelectionList);
@@ -271,7 +318,7 @@ class UserServiceImplTest {
         verify(courseSelectionMapper, times(1)).findByStudent(Mockito.any());
     }
     @Test
-    void getCourseTeacher(){
+    public void getCourseTeacher(){
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(teacher);
         Mockito.when(courseMapper.findByTeacher(teacher)).thenReturn(courseList);
@@ -282,5 +329,26 @@ class UserServiceImplTest {
         assertEquals(1, ((List<CourseTeacherVO>)response.getData()).size());
         verify(courseMapper, times(1)).findByTeacher(Mockito.any());
     }
-
+    @Test
+    public void getConnectDureationTest(){
+        Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
+        Mockito.when(userConnectDurationMapper.findByUser(student)).thenReturn(userConnectDurationList);
+        Response<?> response = userService.getConnectDuration(studentToken);
+        assertTrue(response.isSuccess());
+        assertEquals("获取用户连接时长成功(单位：秒）", response.getMessage());
+        HashMap<String, Long>map = (HashMap<String, Long>) response.getData();
+        assertEquals(userConnectDuration_1.getDuration()+userConnectDuration_2.getDuration(), map.get(course.getCourseName()).longValue());
+    }
+    @Test
+    public void getAllConnectDurationTest(){
+        List<User> userList= new ArrayList<>();
+        userList.add(student);
+        Mockito.when(userMapper.findAll()).thenReturn(userList);
+        Mockito.when(userConnectDurationMapper.findByUser(student)).thenReturn(userConnectDurationList);
+        Response<?> response = userService.getAllConnectDuration();
+        assertTrue(response.isSuccess());
+        assertEquals("获取所有用户连接时长成功(单位：秒）", response.getMessage());
+        HashMap<String, Long>map = (HashMap<String, Long>) response.getData();
+        assertEquals(userConnectDuration_1.getDuration()+userConnectDuration_2.getDuration(), map.get(student.getUsername()).longValue());
+    }
 }

@@ -22,10 +22,10 @@ public class OpenAIAPI {
 
     String chatEndpoint = "https://api.openai.com/v1/chat/completions";
 
-    String apiKey = "Bearer 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";
+    String apiKey = "Bearer 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";
     public String chat(String txt, List<Map<String, String>> dataList) {
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("model", "gpt-3.5-turbo-0301");
+        paramMap.put("model", "gpt-3.5-turbo");
         paramMap.put("temperature", 0.6);
 
         dataList.add(new HashMap<String, String>(){{
@@ -43,6 +43,7 @@ public class OpenAIAPI {
                     .execute()
                     .body();
             JSONObject jsonObject = JSONUtil.parseObj(body);
+//            System.out.println(jsonObject.toString());
             JSONArray choices = jsonObject.getJSONArray("choices");
             JSONObject result = choices.get(0, JSONObject.class, Boolean.TRUE);
             message = result.getJSONObject("message");
@@ -59,6 +60,9 @@ public class OpenAIAPI {
             put("role", "assistant");
             put("content", "你好，我是机器人小助手，有什么可以帮助你的吗？");
         }});
+        System.out.println("<request>:");
+        System.out.println("你是谁");
+        System.out.println("<response>:");
         System.out.println(chat("你是谁", dataList));
     }
 }

@@ -14,6 +14,7 @@ import com.se.advancedweb.mapper.UserConnectDurationMapper;
 import com.se.advancedweb.mapper.UserMapper;
 import com.se.advancedweb.util.MossAPI;
 import com.se.advancedweb.util.OpenAIAPI;
+import lombok.Data;
 import org.springframework.aop.support.DelegatingIntroductionInterceptor;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+@Data
 @Configuration
 public class SocketIOConfig implements InitializingBean {
     @Resource
@@ -84,7 +86,6 @@ public class SocketIOConfig implements InitializingBean {
         configuration.setPingTimeout(pingTimeout);
         // Ping消息间隔（毫秒），默认25秒。客户端向服务器发送一条心跳消息间隔
         configuration.setPingInterval(pingInterval);
-
         SocketIOServer server = new SocketIOServer(configuration);
         //添加事件监听器
         server.addConnectListener(client -> {

@@ -161,7 +161,7 @@ public class UserServiceImpl implements UserService {
             }
             return new Response<>(true, "获取课程成功", courseStudentVOS);
         }
-        else if (user.getRole() == ConstVariable.TEACHER){
+        else {
             List<Course> courses = courseMapper.findByTeacher(user);
             List<CourseTeacherVO> courseTeacherVOS = new ArrayList<>();
             for (Course course : courses){
@@ -173,9 +173,6 @@ public class UserServiceImpl implements UserService {
                 courseTeacherVOS.add(new CourseTeacherVO(course.getCourseName(), course.getCourseDescription(), students));
             }
             return new Response<>(true, "获取课程成功", courseTeacherVOS);
-        }
-        else {
-            return new Response<>(false, "获取课程失败");
         }
     }
     @Override
@@ -198,11 +195,11 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public Response<?> getAllConnectDuration(){
-        HashMap<String, Integer> map = new HashMap<>();
+        HashMap<String, Long> map = new HashMap<>();
         List<User> users= userMapper.findAll();
         for(User user : users){
             List<UserConnectDuration> userConnectDurations = userConnectDurationMapper.findByUser(user);
-            int totalDuration = 0;
+            Long totalDuration = 0L;
             for (UserConnectDuration userConnectDuration : userConnectDurations){
                 totalDuration += userConnectDuration.getDuration();
             }

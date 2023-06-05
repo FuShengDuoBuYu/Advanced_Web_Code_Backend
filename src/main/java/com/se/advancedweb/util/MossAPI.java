@@ -55,19 +55,23 @@ public class MossAPI {
     public static void main(String[] args) {
         // 示例1：不含有上下文的请求
         String requestText = "hi";
+        System.out.println("<request>:");
+        System.out.println(requestText);
         HashMap<String, String>result = MossAPI.sendRequest(requestText, "");
-        System.out.println("response:");
+        System.out.println("<response>:");
         System.out.println(result.get("response"));
-        System.out.println("context:");
-        System.out.println(result.get("context"));
+//        System.out.println("context:");
+//        System.out.println(result.get("context"));
 
         // 示例2：含有上下文的请求
         requestText = "what's your name?";
+        System.out.println("<request>:");
+        System.out.println(requestText);
         HashMap<String, String>result2 = MossAPI.sendRequest(requestText, result.get("context"));
-        System.out.printf("response:");
+        System.out.println("<response>:");
         System.out.println(result2.get("response"));
-        System.out.println("context:");
-        System.out.println(result2.get("context"));
+//        System.out.println("context:");
+//        System.out.println(result2.get("context"));
     }
 }
 
