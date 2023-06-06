@@ -29,7 +29,7 @@ public class UserController {
     }
     @ApiOperation(value = "获取用户信息", hidden = true)
     @VerifyToken
-    @PostMapping("/info")
+    @GetMapping("/info")
     public Response<?> getUserInfo(@RequestHeader("token") String token) {
         return userService.getUserInfo(token);
     }
@@ -107,4 +107,18 @@ public class UserController {
     public Response<?> getAllConnectDuration() {
         return userService.getAllConnectDuration();
     }
+
+    @ApiOperation(value = "获取上一周学习时长")
+    @VerifyToken
+    @GetMapping("/chart/getSevenDaysDuration")
+    public Response<?> getStudyDuration(@RequestHeader("token") String token) {
+        return userService.getSevenDaysDuration(token);
+    }
+    @ApiOperation(value = "获取每门课的发言次数")
+    @VerifyToken
+    @GetMapping("/chart/getCourseChatTimes")
+    public Response<?> getCourseChatTimes(@RequestHeader("token") String token) {
+        return userService.getCourseChatTimes(token);
+    }
+
 }

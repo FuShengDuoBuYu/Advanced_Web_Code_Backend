@@ -120,7 +120,8 @@ public class SocketIOConfig implements InitializingBean {
             String realUserName = userName.split("-")[1];
             User user = userMapper.findByUsername(realUserName);
             Course course = courseMapper.findByCourseId(roomId);
-            UserConnectDuration userConnectDuration = new UserConnectDuration(duration, course, user);
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            UserConnectDuration userConnectDuration = new UserConnectDuration(duration, timestamp, course, user);
             userConnectDurationMapper.save(userConnectDuration);
 
             UUID sessionId = client.getSessionId();

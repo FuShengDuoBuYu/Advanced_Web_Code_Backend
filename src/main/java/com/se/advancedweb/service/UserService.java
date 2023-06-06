@@ -29,5 +29,6 @@ public interface UserService {
 
     public Response<?> getConnectDuration(String token);
     public Response<?> getAllConnectDuration();
-
+    public Response<?> getSevenDaysDuration(String token);
+    public Response<?> getCourseChatTimes(String token);
 }

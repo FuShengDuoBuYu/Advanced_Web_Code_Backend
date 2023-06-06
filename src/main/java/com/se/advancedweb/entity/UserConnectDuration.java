@@ -7,6 +7,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import org.hibernate.annotations.Table;
 import javax.persistence.*;
+import java.sql.Timestamp;
 
 @Data
 @NoArgsConstructor
@@ -21,14 +22,17 @@ public class UserConnectDuration {
     private int userConnectDurationId;
     @Column(name = "duration", length = 256, nullable = false)
     private Long duration;
+    @Column(name = "time", length = 256, nullable = true)
+    private Timestamp time;
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    public UserConnectDuration(Long duration, Course course, User user) {
+    public UserConnectDuration(Long duration,Timestamp time ,Course course, User user) {
         this.duration = duration;
+        this.time = time;
         this.course = course;
         this.user = user;
     }

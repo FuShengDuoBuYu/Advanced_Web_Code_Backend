@@ -1,8 +1,11 @@
 package com.se.advancedweb.mapper;
 
+import com.se.advancedweb.entity.User;
 import com.se.advancedweb.entity.UserChatMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserChatMessageMapper extends JpaRepository<UserChatMessage, Long> {
+import java.util.List;
 
+public interface UserChatMessageMapper extends JpaRepository<UserChatMessage, Long> {
+    List<UserChatMessage> findByUser(User user);
 }

@@ -9,6 +9,7 @@ import com.se.advancedweb.service.UserService;
 import com.se.advancedweb.util.ConstVariable;
 import com.se.advancedweb.util.Response;
 import com.se.advancedweb.util.TokenUtil;
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -58,11 +60,32 @@ public class UserServiceImpl implements UserService {
         JSONObject data = new JSONObject();
         String id = TokenUtil.getUserId(token);
         User user = userMapper.findByUserId(Integer.parseInt(id));
+        // 获取总的学习时长
+        List<UserConnectDuration> userConnectDurationList = userConnectDurationMapper.findByUser(user);
+        int totalDuration = 0;
+        for(UserConnectDuration userConnectDuration : userConnectDurationList){
+            totalDuration += userConnectDuration.getDuration();
+        }
+        // 获取发言总次数
+        List<UserChatMessage> userChatMessageList = userChatMessageMapper.findByUser(user);
+        int totalChatTimes = userChatMessageList.size();
+        // 获取上次登陆时间
+        List<UserLoginHistory> userLoginHistoryList = userLoginHistoryMapper.findByUser(user);
+        Timestamp lastLoginTime = userLoginHistoryList.get(userLoginHistoryList.size() - 1).getTime();
+        // 转换为字符串
+        String lastLoginTimeStr = lastLoginTime.toString();
+        // 获取上次发言内容
+        String lastChatMessage = userChatMessageList.get(userChatMessageList.size() - 1).getMessage();
+
         //更新token
         String newToken = TokenUtil.getToken(id, user.getUsername(), String.valueOf(user.getRole()), user.getPassword());
         data.put("token", newToken);
         data.put("user_name", user.getUsername());
         data.put("role", user.getRole());
+        data.put("last_login_time", lastLoginTimeStr);
+        data.put("total_duration", totalDuration);
+        data.put("total_chat_times", totalChatTimes);
+        data.put("last_chat_message", lastChatMessage);
         return new Response<>(true, "获取用户信息成功！", data);
     }
     @Override
@@ -206,5 +229,55 @@ public class UserServiceImpl implements UserService {
             map.put(user.getUsername(), totalDuration);
         }
         return new Response<>(true, "获取所有用户连接时长成功(单位：秒）", map);
+    }
+
+    @Override
+    public Response<?> getSevenDaysDuration(String token){
+        String id = TokenUtil.getUserId(token);
+        User user = userMapper.findByUserId(Integer.parseInt(id));
+        List<UserConnectDuration> userConnectDurations = userConnectDurationMapper.findByUser(user);
+        HashMap<Integer, Integer> map = new HashMap<>();
+        map.put(6, 0);
+        map.put(5, 0);
+        map.put(4, 0);
+        map.put(3, 0);
+        map.put(2, 0);
+        map.put(1, 0);
+        map.put(0, 0);
+        // 当天的日期
+        Timestamp today = new Timestamp(System.currentTimeMillis());
+        for (UserConnectDuration userConnectDuration : userConnectDurations){
+            Timestamp timestamp = userConnectDuration.getTime();
+            if (timestamp == null){
+                continue;
+            }
+            // 两个时间相差的天数
+            int days = (int) ((today.getTime() - timestamp.getTime()) / (1000*3600*24));
+            if (days <= 6){
+                map.put(days, map.get(days) + userConnectDuration.getDuration().intValue());
+            }
+        }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("lineValue", map);
+        return new Response<>(true, "获取用户近七天连接时长成功(单位：秒）", jsonObject);
+    }
+
+    @Override
+    public Response<?> getCourseChatTimes(String token){
+        String id = TokenUtil.getUserId(token);
+        User user = userMapper.findByUserId(Integer.parseInt(id));
+        List<UserChatMessage> userChatMessages = userChatMessageMapper.findByUser(user);
+        HashMap<String, Integer> map = new HashMap<>();
+        for (UserChatMessage userChatMessage : userChatMessages){
+            Course course = userChatMessage.getCourse();
+            if (map.containsKey(course.getCourseName())){
+                // 更新值
+                map.put(course.getCourseName(), map.get(course.getCourseName()) + 1);
+            }
+            else {
+                map.put(course.getCourseName(), 1);
+            }
+        }
+        return new Response<>(true, "获取用户课程聊天次数成功", map);
     }
 }
