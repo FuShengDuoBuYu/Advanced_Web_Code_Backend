@@ -6,14 +6,18 @@ import com.se.advancedweb.entity.*;
 import com.se.advancedweb.entity.VO.CourseStudentVO;
 import com.se.advancedweb.entity.VO.CourseTeacherVO;
 import com.se.advancedweb.mapper.*;
+import com.se.advancedweb.util.ConstVariable;
 import com.se.advancedweb.util.Response;
 import com.se.advancedweb.util.TokenUtil;
+import io.swagger.models.auth.In;
+import javassist.expr.NewArray;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +36,12 @@ class UserServiceImplTest {
     private String teacherToken;
     private UserConnectDuration userConnectDuration_1;
     private UserConnectDuration userConnectDuration_2;
-    List<UserConnectDuration> userConnectDurationList;
+    private List<UserConnectDuration> userConnectDurationList;
+    private UserChatMessage userChatMessage_1;
+    private UserChatMessage userChatMessage_2;
+    private List<UserChatMessage> userChatMessageList;
+    private UserLoginHistory userLoginHistory_1;
+    private List<UserLoginHistory> userLoginHistoryList;
 
     private UserLoginHistoryMapper userLoginHistoryMapper;
     private UserMapper userMapper;
@@ -41,6 +50,7 @@ class UserServiceImplTest {
     private CourseSelectionMapper courseSelectionMapper;
     private UserChatMessageMapper userChatMessageMapper;
     private UserConnectDurationMapper userConnectDurationMapper;
+
     @BeforeEach
     void setUp() {
         // 创建一个模拟token
@@ -89,14 +99,37 @@ class UserServiceImplTest {
         userConnectDuration_1.setUser(student);
         userConnectDuration_1.setDuration(1000L);
         userConnectDuration_1.setCourse(course);
+        userConnectDuration_1.setTime(new Timestamp(System.currentTimeMillis()));
         userConnectDuration_2 = new UserConnectDuration();
         userConnectDuration_2.setUser(student);
         userConnectDuration_2.setDuration(2000L);
         userConnectDuration_2.setCourse(course);
+        userConnectDuration_2.setTime(null);
         // 创建一个模拟的 UserConnectDuration 列表
         userConnectDurationList = new ArrayList<>();
         userConnectDurationList.add(userConnectDuration_1);
         userConnectDurationList.add(userConnectDuration_2);
+        // 创建一个模拟的 UserChatMessage 对象
+        userChatMessage_1 = new UserChatMessage();
+        userChatMessage_1.setUser(student);
+        userChatMessage_1.setCourse(course);
+        userChatMessage_1.setMessage("TestMessage1");
+        userChatMessage_2 = new UserChatMessage();
+        userChatMessage_2.setUser(student);
+        userChatMessage_2.setCourse(course);
+        userChatMessage_2.setMessage("TestMessage2");
+        // 创建一个模拟的 UserChatMessage 列表
+        userChatMessageList = new ArrayList<>();
+        userChatMessageList.add(userChatMessage_1);
+        userChatMessageList.add(userChatMessage_2);
+        // 创建一个模拟的 UserLoginHistory 对象
+        userLoginHistory_1 = new UserLoginHistory();
+        userLoginHistory_1.setUser(student);
+        userLoginHistory_1.setTime(new Timestamp(System.currentTimeMillis()));
+        userLoginHistory_1.setOperation(ConstVariable.LOGIN_OPERATION);
+        // 创建一个模拟的 UserLoginHistory 列表
+        userLoginHistoryList = new ArrayList<>();
+        userLoginHistoryList.add(userLoginHistory_1);
 
         userService = new UserServiceImpl(userMapper, userLoginHistoryMapper, courseMapper, courseSelectionMapper, userChatMessageMapper, userConnectDurationMapper);
     }
@@ -132,6 +165,7 @@ class UserServiceImplTest {
     public void Login_password_error(){
 // Arrange
         Mockito.when(userMapper.findByUsername("TestStudent")).thenReturn(student);
+
         // Act
         Response<?> response = userService.login("TestStudent", "testPassword");
         // Assert
@@ -145,6 +179,10 @@ class UserServiceImplTest {
     void getUserInfo_success() {
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
+        Mockito.when(userChatMessageMapper.findByUser(student)).thenReturn(userChatMessageList);
+        Mockito.when(userConnectDurationMapper.findByUser(student)).thenReturn(userConnectDurationList);
+        Mockito.when(userLoginHistoryMapper.findByUser(student)).thenReturn(userLoginHistoryList);
+
         // 调用 getUserInfo 方法获取响应
         Response<?> response = userService.getUserInfo(studentToken);
 
@@ -330,7 +368,7 @@ class UserServiceImplTest {
         verify(courseMapper, times(1)).findByTeacher(Mockito.any());
     }
     @Test
-    public void getConnectDureationTest(){
+    public void getConnectDurationTest(){
         Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
         Mockito.when(userConnectDurationMapper.findByUser(student)).thenReturn(userConnectDurationList);
         Response<?> response = userService.getConnectDuration(studentToken);
@@ -350,5 +388,27 @@ class UserServiceImplTest {
         assertEquals("获取所有用户连接时长成功(单位：秒）", response.getMessage());
         HashMap<String, Long>map = (HashMap<String, Long>) response.getData();
         assertEquals(userConnectDuration_1.getDuration()+userConnectDuration_2.getDuration(), map.get(student.getUsername()).longValue());
+    }
+    @Test
+    public void getSevenDaysDurationTest(){
+        Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
+        Mockito.when(userConnectDurationMapper.findByUser(student)).thenReturn(userConnectDurationList);
+        Response<?> response = userService.getSevenDaysDuration(studentToken);
+        assertTrue(response.isSuccess());
+        assertEquals("获取用户近七天连接时长成功(单位：秒）", response.getMessage());
+        JSONObject jsonObject = (JSONObject) response.getData();
+        HashMap<Integer, Integer>map = (HashMap<Integer, Integer>) jsonObject.get("lineValue");
+        assertEquals(userConnectDuration_1.getDuration().intValue(), map.get(0));
+    }
+    @Test
+    public void getCourseChatTimesTest(){
+        Mockito.when(userMapper.findByUserId(Mockito.anyInt())).thenReturn(student);
+        Mockito.when(userChatMessageMapper.findByUser(student)).thenReturn(userChatMessageList);
+        Response<?> response = userService.getCourseChatTimes(studentToken);
+        assertTrue(response.isSuccess());
+        assertEquals("获取用户课程聊天次数成功", response.getMessage());
+        HashMap<String, Integer>map = (HashMap<String, Integer>) response.getData();
+        assertEquals(2, map.get(course.getCourseName()).intValue());
+
     }
 }
