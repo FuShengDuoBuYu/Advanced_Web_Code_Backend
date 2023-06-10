@@ -71,11 +71,17 @@ public class UserServiceImpl implements UserService {
         int totalChatTimes = userChatMessageList.size();
         // 获取上次登陆时间
         List<UserLoginHistory> userLoginHistoryList = userLoginHistoryMapper.findByUser(user);
-        Timestamp lastLoginTime = userLoginHistoryList.get(userLoginHistoryList.size() - 1).getTime();
         // 转换为字符串
-        String lastLoginTimeStr = lastLoginTime.toString();
+        String lastLoginTimeStr = "无登陆记录";
+        if (userLoginHistoryList.size()>0){
+            Timestamp lastLoginTime = userLoginHistoryList.get(userLoginHistoryList.size() - 1).getTime();
+            lastLoginTimeStr = lastLoginTime.toString();
+        }
         // 获取上次发言内容
-        String lastChatMessage = userChatMessageList.get(userChatMessageList.size() - 1).getMessage();
+        String lastChatMessage = "无发言记录";
+        if (userChatMessageList.size()>0){
+            userChatMessageList.get(userChatMessageList.size() - 1).getMessage();
+        }
 
         //更新token
         String newToken = TokenUtil.getToken(id, user.getUsername(), String.valueOf(user.getRole()), user.getPassword());
