@@ -36,6 +36,7 @@ class UserServiceImplTest {
     private String teacherToken;
     private UserConnectDuration userConnectDuration_1;
     private UserConnectDuration userConnectDuration_2;
+    private UserConnectDuration userConnectDuration_3;
     private List<UserConnectDuration> userConnectDurationList;
     private UserChatMessage userChatMessage_1;
     private UserChatMessage userChatMessage_2;
@@ -105,10 +106,17 @@ class UserServiceImplTest {
         userConnectDuration_2.setDuration(2000L);
         userConnectDuration_2.setCourse(course);
         userConnectDuration_2.setTime(null);
+        userConnectDuration_3 = new UserConnectDuration();
+        userConnectDuration_3.setUser(student);
+        userConnectDuration_3.setDuration(3000L);
+        userConnectDuration_3.setCourse(course);
+        // userConnectDuration_3时间设为八天前
+        userConnectDuration_3.setTime(new Timestamp(System.currentTimeMillis() - 8 * 24 * 60 * 60 * 1000));
         // 创建一个模拟的 UserConnectDuration 列表
         userConnectDurationList = new ArrayList<>();
         userConnectDurationList.add(userConnectDuration_1);
         userConnectDurationList.add(userConnectDuration_2);
+        userConnectDurationList.add(userConnectDuration_3);
         // 创建一个模拟的 UserChatMessage 对象
         userChatMessage_1 = new UserChatMessage();
         userChatMessage_1.setUser(student);
@@ -375,7 +383,7 @@ class UserServiceImplTest {
         assertTrue(response.isSuccess());
         assertEquals("获取用户连接时长成功(单位：秒）", response.getMessage());
         HashMap<String, Long>map = (HashMap<String, Long>) response.getData();
-        assertEquals(userConnectDuration_1.getDuration()+userConnectDuration_2.getDuration(), map.get(course.getCourseName()).longValue());
+        assertEquals(userConnectDuration_1.getDuration()+userConnectDuration_2.getDuration()+userConnectDuration_3.getDuration(), map.get(course.getCourseName()).longValue());
     }
     @Test
     public void getAllConnectDurationTest(){
@@ -387,7 +395,7 @@ class UserServiceImplTest {
         assertTrue(response.isSuccess());
         assertEquals("获取所有用户连接时长成功(单位：秒）", response.getMessage());
         HashMap<String, Long>map = (HashMap<String, Long>) response.getData();
-        assertEquals(userConnectDuration_1.getDuration()+userConnectDuration_2.getDuration(), map.get(student.getUsername()).longValue());
+        assertEquals(userConnectDuration_1.getDuration()+userConnectDuration_2.getDuration()+userConnectDuration_3.getDuration(), map.get(student.getUsername()).longValue());
     }
     @Test
     public void getSevenDaysDurationTest(){
