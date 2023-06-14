@@ -11,8 +11,9 @@ public interface UserService {
     // 获取用户信息
     public Response<?> getUserInfo(String token);
     // 用户注册
-    public Response<?> register(String username, String password, int role);
-
+    public Response<?> register(String username, String password, int role, String avatarBase64);
+    public Response<?> changePassword(String token, String oldPassword, String newPassword);
+    public Response<?> changeUserInfo(String token, String username, String avatarBase64);
     // 获取所有用户
      public Response<?> getAllUser();
     // 通过id获取用户

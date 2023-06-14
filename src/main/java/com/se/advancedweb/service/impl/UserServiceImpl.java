@@ -88,6 +88,7 @@ public class UserServiceImpl implements UserService {
         data.put("token", newToken);
         data.put("user_name", user.getUsername());
         data.put("role", user.getRole());
+        data.put("avatar", user.getAvatarBase64());
         data.put("last_login_time", lastLoginTimeStr);
         data.put("total_duration", totalDuration);
         data.put("total_chat_times", totalChatTimes);
@@ -95,15 +96,39 @@ public class UserServiceImpl implements UserService {
         return new Response<>(true, "获取用户信息成功！", data);
     }
     @Override
-    public Response<?> register(String username, String password, int role) {
+    public Response<?> register(String username, String password, int role, String avatarBase64) {
         User user = userMapper.findByUsername(username);
         if(user != null){
             return new Response<>(false, "用户名已存在！");
         }
-        user = new User(username, password, role);
+        user = new User(username, password, role, avatarBase64);
 
         userMapper.save(user);
         return new Response<>(true, "注册成功！");
+    }
+    @Override
+    public Response<?> changePassword(String token, String oldPassword, String newPassword){
+        String id = TokenUtil.getUserId(token);
+        User user = userMapper.findByUserId(Integer.parseInt(id));
+        if(!user.getPassword().equals(oldPassword)){
+            return new Response<>(false, "原密码错误！");
+        }
+        user.setPassword(newPassword);
+        userMapper.save(user);
+        return new Response<>(true, "修改密码成功！");
+    }
+    @Override
+    public Response<?> changeUserInfo(String token, String username, String avatarBase64){
+        String id = TokenUtil.getUserId(token);
+        User user = userMapper.findByUserId(Integer.parseInt(id));
+        User user1 = userMapper.findByUsername(username);
+        if(user1 != null && user1.getUserId() != (user.getUserId())){
+            return new Response<>(false, "用户名已存在！");
+        }
+        user.setUsername(username);
+        user.setAvatarBase64(avatarBase64);
+        userMapper.save(user);
+        return new Response<>(true, "修改用户信息成功！");
     }
     @Override
     public Response<?> getAllUser() {

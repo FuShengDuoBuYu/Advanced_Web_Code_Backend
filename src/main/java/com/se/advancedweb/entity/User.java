@@ -28,10 +28,13 @@ public class User {
     private String password;
     @Column(name = "role", nullable = false)
     private int role;
+    @Column(name = "avatar_base64", length = 1024, nullable = false)
+    private String avatarBase64;
 
-    public User(String username, String password, int role) {
+    public User(String username, String password, int role, String avatarBase64) {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.avatarBase64 = avatarBase64;
     }
 }

@@ -206,7 +206,7 @@ class UserServiceImplTest {
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUsername(Mockito.anyString())).thenReturn(null);
 
-        Response<?> response = userService.register("TestUser_new", "password_new", 1);
+        Response<?> response = userService.register("TestUser_new", "password_new", 1,"");
         assertTrue(response.isSuccess());
         assertEquals("注册成功！", response.getMessage());
         verify(userMapper, times(1)).save(Mockito.any(User.class));
@@ -217,7 +217,7 @@ class UserServiceImplTest {
         // mock 掉 userMapper 的 findById 方法
         Mockito.when(userMapper.findByUsername(Mockito.anyString())).thenReturn(student);
 
-        Response<?> response = userService.register("TestStudent", "password", 1);
+        Response<?> response = userService.register("TestStudent", "password", 1,"");
         assertFalse(response.isSuccess());
         assertEquals("用户名已存在！", response.getMessage());
     }

@@ -40,8 +40,27 @@ public class UserController {
         String username = body.getString("username");
         String password = body.getString("password");
         int role = body.getInteger("role");
-        return userService.register(username, password, role);
+        String avatarBase64 = body.getString("avatarBase64");
+        return userService.register(username, password, role, avatarBase64);
     }
+    @ApiOperation(value = "用户修改密码")
+    @VerifyToken
+    @PostMapping("/changePassword")
+    public Response<?> changePassword(@RequestHeader("token") String token, @RequestBody JSONObject body) {
+        String oldPassword = body.getString("oldPassword");
+        String newPassword = body.getString("newPassword");
+        return userService.changePassword(token, oldPassword, newPassword);
+    }
+
+    @ApiOperation(value = "用户修改个人信息")
+    @VerifyToken
+    @PostMapping("/changeUserInfo")
+    public Response<?> changeUserInfo(@RequestHeader("token") String token, @RequestBody JSONObject body) {
+        String username = body.getString("username");
+        String avatarBase64 = body.getString("avatarBase64");
+        return userService.changeUserInfo(token, username, avatarBase64);
+    }
+
     @ApiOperation(value = "获取所有用户", hidden = true)
     @VerifyToken
     @GetMapping("/all")
