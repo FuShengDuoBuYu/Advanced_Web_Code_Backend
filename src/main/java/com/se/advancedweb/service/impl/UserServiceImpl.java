@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
         // 获取上次发言内容
         String lastChatMessage = "无发言记录";
         if (userChatMessageList.size()>0){
-            userChatMessageList.get(userChatMessageList.size() - 1).getMessage();
+            lastChatMessage = userChatMessageList.get(userChatMessageList.size() - 1).getMessage();
         }
 
         //更新token
